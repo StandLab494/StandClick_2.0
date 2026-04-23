@@ -1,4 +1,4 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -207,8 +207,11 @@
     const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun']);
     const db = gun.get('standclick_v2');
 
-    // ========== ПРОМОКОДЫ (ОБЩИЕ ЧЕРЕЗ GUN) ==========
+    // ========== ПРОМОКОДЫ ==========
     const promosDb = gun.get('standclick_promos');
+
+    // ========== КЛЮЧ ДЛЯ СОХРАНЕНИЯ ==========
+    const SAVE_KEY = 'standclick_player';
 
     // ========== ДАННЫЕ ==========
     let game = {
@@ -225,9 +228,67 @@
     const rareSkins = ["AKM Tiger", "Desert Eagle Cobra", "M4A4 Griffin"];
     const legendarySkins = ["AWP Dragon Lore", "Karambit Fade", "M9 Bayonet"];
 
-    // ========== ФУНКЦИИ ==========
-    function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
+    // ========== ГЕНЕРАЦИЯ ID ==========
+    function generateId() {
+        return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
 
+    // ========== СОХРАНЕНИЕ (РАБОТАЕТ!) ==========
+    function saveGame() {
+        if (!game.id) return;
+        const saveData = {
+            id: game.id,
+            nick: game.nick,
+            gold: game.gold,
+            mmr: game.mmr,
+            wins: game.wins,
+            skins: game.skins,
+            usedPromos: game.usedPromos
+        };
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        
+        // Показываем индикатор сохранения
+        const indicator = document.getElementById('saveIndicator');
+        if (indicator) {
+            indicator.style.opacity = '1';
+            setTimeout(() => indicator.style.opacity = '0', 1500);
+        }
+    }
+
+    // ========== ЗАГРУЗКА (РАБОТАЕТ!) ==========
+    function loadGame() {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                game.id = data.id;
+                game.nick = data.nick || "Игрок";
+                game.gold = data.gold ?? 1000;
+                game.mmr = data.mmr ?? 0;
+                game.wins = data.wins ?? 0;
+                game.skins = data.skins || [];
+                game.usedPromos = data.usedPromos || [];
+            } catch(e) {
+                console.error("Ошибка загрузки:", e);
+            }
+        }
+        
+        // Если нет ID или игрок не найден, создаём нового
+        if (!game.id) {
+            game.id = generateId();
+            game.nick = "Игрок";
+            game.gold = 1000;
+            game.mmr = 0;
+            game.wins = 0;
+            game.skins = [];
+            game.usedPromos = [];
+            saveGame();
+        }
+        
+        updateUI();
+    }
+
+    // ========== РАНГ ==========
     function getRankName() {
         if (game.mmr >= 5000) return "Global Elite";
         if (game.mmr >= 3000) return "Legendary Eagle";
@@ -236,35 +297,7 @@
         return "Silver I";
     }
 
-    function saveGame() {
-        localStorage.setItem('standclick_player', JSON.stringify(game));
-    }
-
-    function loadGame() {
-        const savedId = localStorage.getItem('standclick_lastId');
-        if (savedId) {
-            const raw = localStorage.getItem('standclick_player_' + savedId);
-            if (raw) {
-                try {
-                    const d = JSON.parse(raw);
-                    game.id = d.id;
-                    game.nick = d.nick || "Игрок";
-                    game.gold = d.gold ?? 1000;
-                    game.mmr = d.mmr ?? 0;
-                    game.wins = d.wins ?? 0;
-                    game.skins = d.skins || [];
-                    game.usedPromos = d.usedPromos || [];
-                } catch(e) {}
-            }
-        }
-        if (!game.id) {
-            game.id = generateId();
-            saveGame();
-            localStorage.setItem('standclick_lastId', game.id);
-        }
-        updateUI();
-    }
-
+    // ========== UI ==========
     function updateUI() {
         document.getElementById('gold').innerText = Math.floor(game.gold) + " G";
         document.getElementById('nick').innerText = game.nick;
@@ -273,6 +306,7 @@
         document.getElementById('rank').innerHTML = getRankName();
         document.getElementById('playerIdDisplay').innerText = game.id;
         
+        // Инвентарь
         document.getElementById('skinsList').innerHTML = game.skins.map((s, i) => `
             <div class="item-card">
                 <div>🎨 ${s}</div>
@@ -280,19 +314,18 @@
         `).join('');
     }
 
+    // ========== ПРОМОКОДЫ ==========
     async function activatePromo() {
         const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
         if (!code) { showToast("❌ Введите код"); return; }
         if (game.usedPromos.includes(code)) { showToast("❌ Вы уже использовали этот промокод!"); return; }
         
-        // Ищем промокод в Gun
         promosDb.get(code).once((data) => {
             if (!data || data.usesLeft <= 0) {
                 showToast("❌ Неверный или использованный промокод!");
                 return;
             }
             
-            // Активируем
             data.usesLeft--;
             promosDb.get(code).put(data);
             
@@ -306,6 +339,7 @@
         });
     }
 
+    // ========== КЕЙСЫ ==========
     function openCase(price, skins, caseName) {
         if (game.gold < price) { showToast(`❌ Нужно ${price} G`); return; }
         game.gold -= price;
@@ -316,6 +350,7 @@
         showToast(`🎁 ${caseName} | Выпало: ${randomSkin}!`);
     }
 
+    // ========== МАТЧ ==========
     function startMatch() {
         const win = Math.random() > 0.48;
         const mmrChange = Math.floor(Math.random() * 15) + 5;
@@ -331,6 +366,7 @@
         updateUI();
     }
 
+    // ========== УТИЛИТЫ ==========
     function showToast(msg) {
         const toast = document.createElement('div');
         toast.className = 'toast';
@@ -344,7 +380,7 @@
         showToast("🆔 ID скопирован!");
     }
 
-    // ========== СОБЫТИЯ ==========
+    // ========== НАВИГАЦИЯ ==========
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -354,6 +390,7 @@
         });
     });
 
+    // ========== СОБЫТИЯ ==========
     document.getElementById('clickBtn').onclick = () => {
         game.gold++;
         saveGame();
@@ -385,18 +422,27 @@
             game.nick = newNick.trim();
             saveGame();
             updateUI();
+            showToast(`✅ Ник изменён на ${game.nick}`);
         }
     };
 
     document.getElementById('resetBtn').onclick = () => {
-        if (confirm("Сбросить прогресс?")) {
-            localStorage.clear();
+        if (confirm("Сбросить весь прогресс?")) {
+            localStorage.removeItem(SAVE_KEY);
             location.reload();
         }
     };
 
     document.getElementById('activatePromoBtn').onclick = activatePromo;
 
+    // Добавляем индикатор сохранения
+    const indicator = document.createElement('div');
+    indicator.id = 'saveIndicator';
+    indicator.style.cssText = 'position:fixed; bottom:15px; left:15px; background:#00000080; padding:4px 10px; border-radius:20px; font-size:10px; color:#0f0; opacity:0; transition:0.3s; z-index:999;';
+    indicator.innerText = '💾 Сохранено';
+    document.body.appendChild(indicator);
+
+    // ========== ЗАПУСК ==========
     loadGame();
     setInterval(() => saveGame(), 30000);
 </script>
