@@ -1,0 +1,1065 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>ADMIN PANEL — StandClick 2.0</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a1a, #1a0a2e);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        /* Контейнер */
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Шапка */
+        .admin-header {
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Поиск */
+        .search-box {
+            background: rgba(255,255,255,0.1);
+            border-radius: 40px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            width: 250px;
+        }
+        
+        .search-box input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(15,23,42,0.8);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #a855f7;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        /* Вкладки */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            background: rgba(30,41,59,0.8);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            color: white;
+            box-shadow: 0 0 15px rgba(168,85,247,0.5);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Таблица игроков */
+        .players-table {
+            background: rgba(15,23,42,0.8);
+            border-radius: 16px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        th {
+            color: #a855f7;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        tr:hover {
+            background: rgba(168,85,247,0.1);
+        }
+        
+        /* Формы */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        input:focus, select:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 10px rgba(168,85,247,0.3);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #a855f7, #7c3aed);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168,85,247,0.4);
+        }
+        
+        button.danger {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+        }
+        
+        button.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        button.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .card {
+            background: rgba(15,23,42,0.8);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(168,85,247,0.2);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #a855f7;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .promo-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .promo-item {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        
+        /* Модалка */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid #a855f7;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            font-size: 24px;
+            padding: 0;
+            color: #aaa;
+        }
+        
+        /* Адаптив */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            th, td { padding: 8px 10px; font-size: 12px; }
+            .search-box input { width: 150px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <div class="logo">
+                🔐 STANDCLICK 2.0 — ADMIN PANEL
+            </div>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span id="connectionStatus">Подключение...</span>
+                <span id="adminName" style="color:#a855f7;"></span>
+            </div>
+            <div class="search-box">
+                🔍 <input type="text" id="searchInput" placeholder="Поиск по ID или нику...">
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="totalPlayers">0</div><div class="stat-label">Всего игроков</div></div>
+            <div class="stat-card"><div class="stat-value" id="onlineNow">0</div><div class="stat-label">Сейчас онлайн</div></div>
+            <div class="stat-card"><div class="stat-value" id="totalGold">0</div><div class="stat-label">Всего голды</div></div>
+            <div class="stat-card"><div class="stat-value" id="totalWins">0</div><div class="stat-label">Всего побед</div></div>
+        </div>
+        
+        <!-- Вкладки -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="players">👥 Управление игроками</button>
+            <button class="tab-btn" data-tab="economy">💰 Экономика</button>
+            <button class="tab-btn" data-tab="items">🎁 Выдача предметов</button>
+            <button class="tab-btn" data-tab="promo">🏷️ Промокоды</button>
+            <button class="tab-btn" data-tab="server">⚙️ Управление сервером</button>
+            <button class="tab-btn" data-tab="logs">📋 Логи действий</button>
+        </div>
+        
+        <!-- Вкладка: Игроки -->
+        <div id="tab-players" class="tab-content active">
+            <div class="players-table">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Ник</th><th>Голда</th><th>MMR</th><th>Победы</th><th>BP</th><th>Скины</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody id="playersTableBody">
+                        <tr><td colspan="8" class="loading">Загрузка игроков...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Вкладка: Экономика -->
+        <div id="tab-economy" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">💰 Массовая выдача голды</div>
+                    <div class="form-group"><label>ID игрока (или ALL для всех)</label><input type="text" id="economyTargetId" placeholder="ID игрока или ALL"></div>
+                    <div class="form-group"><label>Количество голды</label><input type="number" id="economyGoldAmount" placeholder="Сколько добавить"></div>
+                    <button id="addGoldBtn" style="width:100%;">➕ Добавить голду</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">📊 MMR массовое изменение</div>
+                    <div class="form-group"><label>ID игрока (или ALL для всех)</label><input type="text" id="economyMmrTarget" placeholder="ID игрока или ALL"></div>
+                    <div class="form-group"><label>Установить MMR</label><input type="number" id="economyMmrValue" placeholder="Новое значение"></div>
+                    <button id="setMmrBtn" style="width:100%;">🎯 Установить MMR</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">🏆 Массовый сброс</div>
+                    <button id="resetAllBtn" class="danger" style="width:100%;">⚠️ СБРОСИТЬ ВСЮ ЭКОНОМИКУ ⚠️</button>
+                    <p style="font-size:11px; color:#666; margin-top:10px;">Сбросит голду и MMR у всех игроков</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладка: Выдача предметов -->
+        <div id="tab-items" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">🎨 Выдать скин</div>
+                    <div class="form-group"><label>ID игрока</label><input type="text" id="itemTargetId" placeholder="ID игрока"></div>
+                    <div class="form-group"><label>Название скина</label><input type="text" id="itemSkinName" placeholder="Например: AWP Dragon Lore"></div>
+                    <div class="form-group"><label>Редкость</label>
+                        <select id="itemSkinRarity">
+                            <option value="common">Обычный (common)</option>
+                            <option value="rare">Редкий (rare)</option>
+                            <option value="epic">Эпический (epic)</option>
+                            <option value="legendary">Легендарный (legendary)</option>
+                            <option value="arcane">Арканный (arcane)</option>
+                            <option value="mythic">Мифический (mythic)</option>
+                        </select>
+                    </div>
+                    <button id="giveSkinBtn" style="width:100%;">🎁 Выдать скин</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">💊 Выдать зелья</div>
+                    <div class="form-group"><label>ID игрока</label><input type="text" id="itemPotionTarget" placeholder="ID игрока"></div>
+                    <div class="form-group"><label>Тип зелья</label>
+                        <select id="itemPotionType">
+                            <option value="red">Красное (ускорение клика)</option>
+                            <option value="green">Зелёное (+5 G за клик)</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Количество</label><input type="number" id="itemPotionCount" value="1" min="1"></div>
+                    <button id="givePotionBtn" style="width:100%;">💊 Выдать зелья</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">🔫 Выдать оружие со скином</div>
+                    <div class="form-group"><label>ID игрока</label><input type="text" id="itemWeaponTarget" placeholder="ID игрока"></div>
+                    <div class="form-group"><label>Оружие</label>
+                        <select id="itemWeaponType">
+                            <option value="ak47">AK-47</option>
+                            <option value="awp">AWP</option>
+                            <option value="m4a4">M4A4</option>
+                            <option value="deagle">Desert Eagle</option>
+                            <option value="glock">Glock-18</option>
+                            <option value="usp">USP-S</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Название скина</label><input type="text" id="itemWeaponSkin" placeholder="Название скина"></div>
+                    <button id="giveWeaponSkinBtn" style="width:100%;">🔫 Выдать оружие</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладка: Промокоды -->
+        <div id="tab-promo" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">✨ Создать промокод</div>
+                    <div class="form-group"><label>Код промокода</label><input type="text" id="promoCode" placeholder="Например: SUPER2026"></div>
+                    <div class="form-group"><label>Награда (голда)</label><input type="number" id="promoGold" value="500"></div>
+                    <div class="form-group"><label>Скин в награду</label><input type="text" id="promoSkin" placeholder="(опционально)"></div>
+                    <div class="form-group"><label>Лимит использований</label><input type="number" id="promoLimit" value="9999"></div>
+                    <button id="createPromoBtn" style="width:100%;">🎫 Создать промокод</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">📋 Активные промокоды</div>
+                    <div id="promosList" class="promo-list">Загрузка...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладка: Управление сервером -->
+        <div id="tab-server" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">🔧 Технические работы</div>
+                    <button id="maintenanceOnBtn" class="warning" style="width:100%; margin-bottom:10px;">🛑 Включить тех. работы</button>
+                    <button id="maintenanceOffBtn" class="success" style="width:100%;">✅ Выключить тех. работы</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">📢 Рассылка</div>
+                    <div class="form-group"><label>Сообщение для всех игроков</label><textarea id="broadcastMsg" rows="3" placeholder="Введите сообщение..."></textarea></div>
+                    <button id="broadcastBtn">📢 Отправить рассылку</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">⚠️ Очистка базы</div>
+                    <button id="clearInactiveBtn" class="warning" style="width:100%; margin-bottom:10px;">🗑️ Удалить неактивных (30+ дней)</button>
+                    <button id="clearAllBtn" class="danger" style="width:100%;">🔥 ПОЛНАЯ ОЧИСТКА БАЗЫ</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Вкладка: Логи -->
+        <div id="tab-logs" class="tab-content">
+            <div class="card">
+                <div class="card-title">📋 История действий администратора</div>
+                <div id="logsList" style="max-height: 400px; overflow-y: auto; font-size: 13px;">
+                    <div style="color:#666; text-align:center;">Логи пусты</div>
+                </div>
+                <button id="clearLogsBtn" class="danger" style="margin-top:15px; width:100%;">🗑️ Очистить логи</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модалка редактирования игрока -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color:#a855f7;">✏️ Редактирование игрока</h3>
+                <button class="close-modal" onclick="closeEditModal()">✕</button>
+            </div>
+            <div id="editModalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========== ИНИЦИАЛИЗАЦИЯ GUN ==========
+        const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun', 'https://peer.wallie.io/gun']);
+        let playersData = {};
+        let currentAdminId = null;
+        let adminLogs = [];
+        
+        // Загрузка сохранённых логов
+        try {
+            const savedLogs = localStorage.getItem('admin_logs');
+            if (savedLogs) adminLogs = JSON.parse(savedLogs);
+        } catch(e) {}
+        
+        // Вход в админку (простенькая авторизация)
+        function initAdmin() {
+            const savedId = localStorage.getItem('admin_id');
+            if (savedId) {
+                currentAdminId = savedId;
+                document.getElementById('adminName').innerText = `@${savedId.substring(0,8)}`;
+                return;
+            }
+            
+            const adminCode = prompt('🔐 Введите код администратора:', '');
+            if (adminCode === 'ADMINS+×[$*#2930BRATISLOL00') {
+                currentAdminId = 'ADMIN_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                localStorage.setItem('admin_id', currentAdminId);
+                document.getElementById('adminName').innerText = `@${currentAdminId.substring(0,8)}`;
+                addLog('✅ Администратор вошёл в систему');
+            } else if (adminCode === 'STANDCLICK2025') {
+                currentAdminId = 'ADMIN_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                localStorage.setItem('admin_id', currentAdminId);
+                document.getElementById('adminName').innerText = `@${currentAdminId.substring(0,8)}`;
+                addLog('✅ Администратор вошёл в систему');
+            } else {
+                alert('Неверный код доступа!');
+                document.body.innerHTML = '<div style="text-align:center;padding:50px;"><h1>⛔ ДОСТУП ЗАПРЕЩЁН</h1><p>Неверный код администратора</p></div>';
+            }
+        }
+        
+        function addLog(action, target = null, details = null) {
+            const log = {
+                id: Date.now(),
+                time: new Date().toLocaleString(),
+                admin: currentAdminId,
+                action: action,
+                target: target,
+                details: details
+            };
+            adminLogs.unshift(log);
+            if (adminLogs.length > 200) adminLogs.pop();
+            localStorage.setItem('admin_logs', JSON.stringify(adminLogs));
+            renderLogs();
+        }
+        
+        function renderLogs() {
+            const logsDiv = document.getElementById('logsList');
+            if (!logsDiv) return;
+            if (adminLogs.length === 0) {
+                logsDiv.innerHTML = '<div style="color:#666; text-align:center;">Логи пусты</div>';
+                return;
+            }
+            logsDiv.innerHTML = adminLogs.slice(0, 100).map(log => `
+                <div style="border-bottom:1px solid #334155; padding:10px; font-size:12px;">
+                    <span style="color:#a855f7;">[${log.time}]</span>
+                    <span style="color:#10b981;">${log.admin}</span>
+                    <span style="color:#fff;"> → ${log.action}</span>
+                    ${log.target ? `<div style="color:#888; font-size:11px;">🎯 ${log.target}</div>` : ''}
+                    ${log.details ? `<div style="color:#666; font-size:10px;">📝 ${log.details}</div>` : ''}
+                </div>
+            `).join('');
+        }
+        
+        // Показать уведомление
+        function showToast(msg, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = isError ? '#ef4444' : '#10b981';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // Обновление статистики
+        async function updateStats() {
+            let online = 0;
+            let totalGold = 0;
+            let totalWins = 0;
+            const now = Date.now();
+            
+            for (const id in playersData) {
+                const p = playersData[id];
+                if (p && p.lastSeen && (now - p.lastSeen) < 45000) online++;
+                if (p && p.gold) totalGold += p.gold;
+                if (p && p.wins) totalWins += p.wins;
+            }
+            
+            document.getElementById('totalPlayers').innerText = Object.keys(playersData).length;
+            document.getElementById('onlineNow').innerText = online;
+            document.getElementById('totalGold').innerText = Math.floor(totalGold).toLocaleString();
+            document.getElementById('totalWins').innerText = totalWins.toLocaleString();
+        }
+        
+        // Загрузка всех игроков
+        async function loadAllPlayers() {
+            document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8" class="loading">Загрузка игроков...</td></tr>';
+            
+            return new Promise((resolve) => {
+                const playersIndex = gun.get('players_index');
+                playersIndex.map().once(async (data, id) => {
+                    if (id && data) {
+                        gun.get('p_' + id).once((playerData) => {
+                            if (playerData && playerData.id) {
+                                playersData[id] = playerData;
+                                renderPlayersTable();
+                            }
+                        });
+                    }
+                });
+                
+                setTimeout(() => {
+                    renderPlayersTable();
+                    updateStats();
+                    resolve();
+                }, 3000);
+            });
+        }
+        
+        let searchFilter = '';
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchFilter = e.target.value.toLowerCase();
+            renderPlayersTable();
+        });
+        
+        function renderPlayersTable() {
+            const tbody = document.getElementById('playersTableBody');
+            let filtered = Object.values(playersData);
+            
+            if (searchFilter) {
+                filtered = filtered.filter(p => 
+                    p.id?.toLowerCase().includes(searchFilter) || 
+                    p.nick?.toLowerCase().includes(searchFilter)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">Нет игроков</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(p => `
+                <tr>
+                    <td><span style="font-family:monospace; font-size:11px;">${p.id || '—'}</span></td>
+                    <td><strong>${p.nick || 'Игрок'}</strong></td>
+                    <td style="color:#ffd700;">${Math.floor(p.gold || 0)} G</td>
+                    <td style="color:#ef4444;">${p.mmr || 0}</td>
+                    <td style="color:#10b981;">${p.wins || 0}</td>
+                    <td>${p.bpLevel || 0}/30</td>
+                    <td>${(p.skins?.length || 0)} шт.</td>
+                    <td>
+                        <button onclick="editPlayer('${p.id}')" style="padding:4px 10px; font-size:11px;">✏️</button>
+                        <button onclick="deletePlayer('${p.id}')" class="danger" style="padding:4px 10px; font-size:11px;">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Редактирование игрока
+        window.editPlayer = function(playerId) {
+            const p = playersData[playerId];
+            if (!p) return;
+            
+            const modal = document.getElementById('editModal');
+            const body = document.getElementById('editModalBody');
+            
+            body.innerHTML = `
+                <div class="form-group"><label>ID</label><input type="text" value="${p.id}" disabled></div>
+                <div class="form-group"><label>Ник</label><input type="text" id="editNick" value="${p.nick || 'Игрок'}"></div>
+                <div class="form-group"><label>Голда</label><input type="number" id="editGold" value="${Math.floor(p.gold || 0)}"></div>
+                <div class="form-group"><label>MMR</label><input type="number" id="editMmr" value="${p.mmr || 0}"></div>
+                <div class="form-group"><label>Победы (BP уровень)</label><input type="number" id="editWins" value="${p.wins || 0}"></div>
+                <button id="savePlayerEdit" class="success" style="width:100%;">💾 Сохранить изменения</button>
+            `;
+            
+            modal.style.display = 'flex';
+            
+            document.getElementById('savePlayerEdit').onclick = () => {
+                const newNick = document.getElementById('editNick').value.trim();
+                const newGold = parseFloat(document.getElementById('editGold').value);
+                const newMmr = parseFloat(document.getElementById('editMmr').value);
+                const newWins = parseFloat(document.getElementById('editWins').value);
+                
+                const updates = {};
+                if (newNick) updates.nick = newNick;
+                if (!isNaN(newGold)) updates.gold = newGold;
+                if (!isNaN(newMmr)) updates.mmr = newMmr;
+                if (!isNaN(newWins)) updates.wins = newWins;
+                
+                if (Object.keys(updates).length > 0) {
+                    gun.get('p_' + playerId).put(updates);
+                    if (playersData[playerId]) Object.assign(playersData[playerId], updates);
+                    addLog(`✏️ Отредактирован игрок`, playerId, JSON.stringify(updates));
+                    showToast(`✅ Игрок ${playerId} обновлён!`);
+                    renderPlayersTable();
+                }
+                closeEditModal();
+            };
+        };
+        
+        window.deletePlayer = function(playerId) {
+            if (confirm(`Удалить игрока ${playerId}? Это действие необратимо!`)) {
+                gun.get('p_' + playerId).put(null);
+                gun.get('players_index').get(playerId).put(null);
+                delete playersData[playerId];
+                addLog(`🗑️ Удалён игрок`, playerId);
+                showToast(`❌ Игрок ${playerId} удалён`);
+                renderPlayersTable();
+                updateStats();
+            }
+        };
+        
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+        
+        // Экономика
+        document.getElementById('addGoldBtn').onclick = () => {
+            const target = document.getElementById('economyTargetId').value.trim();
+            const amount = parseFloat(document.getElementById('economyGoldAmount').value);
+            if (isNaN(amount) || amount <= 0) { showToast('Введите корректную сумму!', true); return; }
+            if (!target) { showToast('Введите ID игрока или ALL', true); return; }
+            
+            if (target.toUpperCase() === 'ALL') {
+                let count = 0;
+                for (const id in playersData) {
+                    const p = playersData[id];
+                    const newGold = (p.gold || 0) + amount;
+                    gun.get('p_' + id).put({ gold: newGold });
+                    if (playersData[id]) playersData[id].gold = newGold;
+                    count++;
+                }
+                addLog(`💰 Выдал голду всем (+${amount} G)`, 'ALL');
+                showToast(`✅ ${amount} G выдано ${count} игрокам!`);
+                renderPlayersTable();
+                updateStats();
+            } else {
+                if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
+                const newGold = (playersData[target].gold || 0) + amount;
+                gun.get('p_' + target).put({ gold: newGold });
+                if (playersData[target]) playersData[target].gold = newGold;
+                addLog(`💰 Добавил голду`, target, `+${amount} G`);
+                showToast(`✅ +${amount} G игроку ${target}`);
+                renderPlayersTable();
+                updateStats();
+            }
+            document.getElementById('economyGoldAmount').value = '';
+        };
+        
+        document.getElementById('setMmrBtn').onclick = () => {
+            const target = document.getElementById('economyMmrTarget').value.trim();
+            const mmr = parseFloat(document.getElementById('economyMmrValue').value);
+            if (isNaN(mmr)) { showToast('Введите MMR!', true); return; }
+            if (!target) { showToast('Введите ID игрока или ALL', true); return; }
+            
+            if (target.toUpperCase() === 'ALL') {
+                let count = 0;
+                for (const id in playersData) {
+                    gun.get('p_' + id).put({ mmr: mmr });
+                    if (playersData[id]) playersData[id].mmr = mmr;
+                    count++;
+                }
+                addLog(`🎯 Установил MMR всем (${mmr})`, 'ALL');
+                showToast(`✅ MMR ${mmr} установлен ${count} игрокам!`);
+                renderPlayersTable();
+            } else {
+                if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
+                gun.get('p_' + target).put({ mmr: mmr });
+                if (playersData[target]) playersData[target].mmr = mmr;
+                addLog(`🎯 Установил MMR`, target, `${mmr}`);
+                showToast(`✅ MMR ${mmr} установлен игроку ${target}`);
+                renderPlayersTable();
+            }
+        };
+        
+        document.getElementById('resetAllBtn').onclick = () => {
+            if (confirm('⚠️ ВНИМАНИЕ! Это сбросит голду и MMR у ВСЕХ игроков! Продолжить?')) {
+                let count = 0;
+                for (const id in playersData) {
+                    gun.get('p_' + id).put({ gold: 1000, mmr: 0 });
+                    if (playersData[id]) { playersData[id].gold = 1000; playersData[id].mmr = 0; }
+                    count++;
+                }
+                addLog(`⚠️ СБРОС ЭКОНОМИКИ всем игрокам`, 'ALL');
+                showToast(`✅ Сброшена экономика ${count} игрокам!`);
+                renderPlayersTable();
+                updateStats();
+            }
+        };
+        
+        // Выдача предметов
+        document.getElementById('giveSkinBtn').onclick = () => {
+            const target = document.getElementById('itemTargetId').value.trim();
+            const skinName = document.getElementById('itemSkinName').value.trim();
+            const rarity = document.getElementById('itemSkinRarity').value;
+            
+            if (!target || !skinName) { showToast('Заполните все поля!', true); return; }
+            if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
+            
+            const skinData = JSON.stringify({ name: skinName, rarity: rarity });
+            gun.get('p_' + target).get('adminSkins').once((current) => {
+                let newData = skinData;
+                if (current && typeof current === 'string') newData = current + '|' + skinData;
+                gun.get('p_' + target).get('adminSkins').put(newData);
+            });
+            
+            addLog(`🎁 Выдал скин`, target, `${skinName} (${rarity})`);
+            showToast(`✅ Скин "${skinName}" выдан игроку ${target}`);
+            document.getElementById('itemSkinName').value = '';
+        };
+        
+        document.getElementById('givePotionBtn').onclick = () => {
+            const target = document.getElementById('itemPotionTarget').value.trim();
+            const ptype = document.getElementById('itemPotionType').value;
+            const count = parseInt(document.getElementById('itemPotionCount').value);
+            
+            if (!target || isNaN(count) || count <= 0) { showToast('Заполните поля!', true); return; }
+            if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
+            
+            const potions = [];
+            for (let i = 0; i < count; i++) {
+                potions.push({ ptype: ptype, id: Date.now() + Math.random() });
+            }
+            
+            gun.get('p_' + target).get('pendingPotions').once((current) => {
+                let existing = [];
+                try { existing = JSON.parse(current || '[]'); } catch(e) { existing = []; }
+                const all = [...existing, ...potions];
+                gun.get('p_' + target).get('pendingPotions').put(JSON.stringify(all));
+            });
+            
+            addLog(`💊 Выдал зелья`, target, `${count}x ${ptype === 'red' ? 'красное' : 'зелёное'}`);
+            showToast(`✅ ${count} зелий выдано игроку ${target}`);
+        };
+        
+        document.getElementById('giveWeaponSkinBtn').onclick = () => {
+            const target = document.getElementById('itemWeaponTarget').value.trim();
+            const weaponType = document.getElementById('itemWeaponType').value;
+            const skinName = document.getElementById('itemWeaponSkin').value.trim();
+            
+            if (!target || !skinName) { showToast('Заполните поля!', true); return; }
+            if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
+            
+            const weaponUpdate = { skin: { name: skinName, rarity: getSkinRarity(skinName) } };
+            gun.get('p_' + target).get('weapons').get(weaponType).put(weaponUpdate);
+            
+            addLog(`🔫 Выдал оружие`, target, `${weaponType} → ${skinName}`);
+            showToast(`✅ ${weaponType} со скином "${skinName}" выдан`);
+            document.getElementById('itemWeaponSkin').value = '';
+        };
+        
+        function getSkinRarity(name) {
+            if (name.includes('Dragon Lore') || name.includes('Karambit')) return 'arcane';
+            if (name.includes('Gold') || name.includes('Blood')) return 'legendary';
+            return 'epic';
+        }
+        
+        // Промокоды
+        function loadPromos() {
+            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
+            const div = document.getElementById('promosList');
+            if (Object.keys(promos).length === 0) {
+                div.innerHTML = '<div style="color:#666;text-align:center;">Нет промокодов</div>';
+                return;
+            }
+            div.innerHTML = Object.entries(promos).map(([code, data]) => `
+                <div class="promo-item">
+                    <div><strong style="color:#ffd700;">${code}</strong><br><span style="font-size:10px;color:#888;">+${data.gold}G | осталось: ${data.usesLeft}</span></div>
+                    <button onclick="deletePromo('${code}')" class="danger" style="padding:5px 12px;">🗑️</button>
+                </div>
+            `).join('');
+        }
+        
+        window.deletePromo = function(code) {
+            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
+            delete promos[code];
+            localStorage.setItem('standoff2_promos', JSON.stringify(promos));
+            loadPromos();
+            addLog(`🏷️ Удалил промокод`, code);
+            showToast(`Промокод ${code} удалён`);
+        };
+        
+        document.getElementById('createPromoBtn').onclick = () => {
+            const code = document.getElementById('promoCode').value.trim().toUpperCase();
+            const gold = parseInt(document.getElementById('promoGold').value);
+            const skin = document.getElementById('promoSkin').value.trim();
+            const limit = parseInt(document.getElementById('promoLimit').value);
+            
+            if (!code || isNaN(gold) || gold <= 0) { showToast('Заполните поля!', true); return; }
+            
+            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
+            promos[code] = { gold: gold, usesLeft: limit, skin: skin || null };
+            localStorage.setItem('standoff2_promos', JSON.stringify(promos));
+            
+            addLog(`🏷️ Создал промокод`, code, `+${gold}G, лимит: ${limit}`);
+            showToast(`✅ Промокод ${code} создан!`);
+            loadPromos();
+            
+            document.getElementById('promoCode').value = '';
+            document.getElementById('promoGold').value = '500';
+            document.getElementById('promoSkin').value = '';
+            document.getElementById('promoLimit').value = '9999';
+        };
+        
+        // Управление сервером
+        document.getElementById('maintenanceOnBtn').onclick = () => {
+            gun.get('server_maintenance').put({ active: true });
+            addLog(`🔧 Включил технические работы`);
+            showToast('🛑 Технические работы ВКЛЮЧЕНЫ');
+        };
+        
+        document.getElementById('maintenanceOffBtn').onclick = () => {
+            gun.get('server_maintenance').put({ active: false });
+            addLog(`✅ Выключил технические работы`);
+            showToast('✅ Технические работы ВЫКЛЮЧЕНЫ');
+        };
+        
+        document.getElementById('broadcastBtn').onclick = () => {
+            const msg = document.getElementById('broadcastMsg').value.trim();
+            if (!msg) { showToast('Введите сообщение!', true); return; }
+            gun.get('broadcast').put({ message: msg, time: Date.now(), from: currentAdminId });
+            addLog(`📢 Отправил рассылку`, 'ALL', msg);
+            showToast(`📢 Рассылка отправлена всем игрокам!`);
+            document.getElementById('broadcastMsg').value = '';
+        };
+        
+        document.getElementById('clearInactiveBtn').onclick = () => {
+            if (confirm('Удалить игроков, не заходивших более 30 дней?')) {
+                const monthAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+                let count = 0;
+                for (const id in playersData) {
+                    const p = playersData[id];
+                    if (p && (!p.lastSeen || p.lastSeen < monthAgo)) {
+                        gun.get('p_' + id).put(null);
+                        gun.get('players_index').get(id).put(null);
+                        delete playersData[id];
+                        count++;
+                    }
+                }
+                addLog(`🗑️ Удалил неактивных игроков`, `30+ дней, ${count} игроков`);
+                showToast(`✅ Удалено ${count} неактивных игроков`);
+                renderPlayersTable();
+                updateStats();
+            }
+        };
+        
+        document.getElementById('clearAllBtn').onclick = () => {
+            if (confirm('🔥 ПОЛНОСТЬЮ ОЧИСТИТЬ ВСЮ БАЗУ ДАННЫХ? Это действие НЕОБРАТИМО! 🔥')) {
+                if (confirm('Вы уверены? Все игроки будут удалены навсегда!')) {
+                    let count = 0;
+                    for (const id in playersData) {
+                        gun.get('p_' + id).put(null);
+                        gun.get('players_index').get(id).put(null);
+                        count++;
+                    }
+                    playersData = {};
+                    addLog(`🔥 ПОЛНАЯ ОЧИСТКА БАЗЫ`, `Удалено ${count} игроков`);
+                    showToast(`🔥 Удалено ${count} игроков!`);
+                    renderPlayersTable();
+                    updateStats();
+                }
+            }
+        };
+        
+        document.getElementById('clearLogsBtn').onclick = () => {
+            if (confirm('Очистить все логи?')) {
+                adminLogs = [];
+                localStorage.setItem('admin_logs', JSON.stringify(adminLogs));
+                renderLogs();
+                showToast('Логи очищены');
+            }
+        };
+        
+        // Переключение вкладок
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            });
+        });
+        
+        // Подписка на статус соединения
+        gun.on('hi', () => {
+            document.getElementById('connectionStatus').innerHTML = '🟢 Онлайн';
+            document.getElementById('connectionStatus').style.color = '#10b981';
+        });
+        gun.on('out', () => {
+            document.getElementById('connectionStatus').innerHTML = '🔴 Офлайн';
+            document.getElementById('connectionStatus').style.color = '#ef4444';
+        });
+        
+        // Подписка на бродкаст (для отображения в админке)
+        gun.get('broadcast').on((data) => {
+            if (data && data.message) {
+                showToast(`📢 РАССЫЛКА: ${data.message}`);
+            }
+        });
+        
+        // Запуск
+        initAdmin();
+        loadAllPlayers();
+        loadPromos();
+        renderLogs();
+        
+        // Обновляем статистику каждые 10 секунд
+        setInterval(() => { updateStats(); }, 10000);
+        
+        // Закрытие модалки по клику вне
+        window.onclick = (e) => {
+            const modal = document.getElementById('editModal');
+            if (e.target === modal) closeEditModal();
+        };
+    </script>
+</body>
+</html>
