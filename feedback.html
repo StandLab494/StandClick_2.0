@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>StandClick — Баги и идеи</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glass: rgba(10, 5, 20, 0.7);
+            --glass2: rgba(15, 10, 25, 0.5);
+            --stroke: rgba(255, 255, 255, 0.08);
+            --radius: 24px;
+            --shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5);
+            --gold1: #e5c070;
+            --gold2: #c79a3d;
+            --text: #ffffff;
+            --muted: #a0a0b0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a0a2e 100%);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* MENU (из твоего примера) */
+        .topbar {
+            margin-bottom: 0;
+        }
+        .logo-link {
+            cursor: pointer;
+            display: inline-block;
+        }
+        .logo {
+            filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.55));
+            height: 90px;
+        }
+        .tabs {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            display: flex;
+            gap: 8px;
+            margin: 14px 0 18px;
+            padding: 4px;
+        }
+        .tab {
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+            font-weight: 700;
+            height: 42px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.85);
+        }
+        .tab--active {
+            background: linear-gradient(135deg, rgba(229, 192, 112, 0.15), rgba(199, 154, 61, 0.1));
+            border: 1px solid rgba(229, 192, 112, 0.3);
+            box-shadow: 0 4px 12px rgba(229, 192, 112, 0.15);
+            color: var(--gold1);
+        }
+
+        /* Основные стили */
+        .page {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 0 16px;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            width: min(1320px, 100%);
+        }
+        .content {
+            flex: 1;
+        }
+        .glass {
+            backdrop-filter: blur(18px);
+            background: var(--glass);
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        /* Формы */
+        .field {
+            margin: 14px 0 18px;
+        }
+        .field-label {
+            align-items: center;
+            color: rgba(255, 255, 255, 0.82);
+            display: flex;
+            font-size: 13px;
+            gap: 12px;
+            justify-content: space-between;
+            margin: 0 0 10px;
+        }
+        .input, textarea {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 500;
+            outline: none;
+            padding: 0 16px;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .input {
+            height: 56px;
+        }
+        textarea {
+            padding: 14px 16px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .input:focus, textarea:focus {
+            border-color: rgba(229, 192, 112, 0.55);
+            box-shadow: 0 0 0 4px rgba(229, 192, 112, 0.14);
+        }
+        .input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 500;
+        }
+
+        /* Кнопки */
+        .btn {
+            align-items: center;
+            background: linear-gradient(90deg, var(--gold1), var(--gold2));
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 22px 44px rgba(199, 154, 61, 0.25);
+            color: #1a1206;
+            cursor: pointer;
+            display: flex;
+            font-size: 16px;
+            font-weight: 900;
+            gap: 10px;
+            height: 56px;
+            justify-content: center;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 28px 50px rgba(199, 154, 61, 0.35);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+            color: var(--gold1);
+        }
+        .btn-secondary:hover {
+            background: rgba(229, 192, 112, 0.15);
+        }
+
+        /* Список багов/идей */
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .feedback-card {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--stroke);
+            border-radius: 18px;
+            padding: 16px;
+            transition: 0.2s;
+        }
+        .feedback-card:hover {
+            border-color: rgba(229, 192, 112, 0.3);
+            background: rgba(0, 0, 0, 0.35);
+        }
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .feedback-type {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        .type-bug {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+        .type-idea {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #10b981;
+        }
+        .feedback-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.4);
+        }
+        .status-pending { color: #f59e0b; border: 1px solid #f59e0b33; background: #f59e0b1a; }
+        .status-done { color: #10b981; border: 1px solid #10b98133; background: #10b9811a; }
+        .status-working { color: #3b82f6; border: 1px solid #3b82f633; background: #3b82f61a; }
+        .feedback-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .feedback-desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .feedback-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.45);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .status-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .filter-btn.active {
+            background: linear-gradient(135deg, rgba(229, 192, 112, 0.2), rgba(199, 154, 61, 0.15));
+            border-color: rgba(229, 192, 112, 0.4);
+            color: var(--gold1);
+        }
+
+        /* Адаптив */
+        @media (max-width: 720px) {
+            .page { padding: 18px 12px 0; }
+            .logo { height: 70px; }
+            .glass { padding: 18px; }
+            .tabs { gap: 6px; padding: 4px; }
+            .tab { font-size: 13px; height: 40px; }
+            .btn { height: 52px; font-size: 15px; }
+            .feedback-title { font-size: 14px; }
+        }
+
+        footer {
+            margin-top: 32px;
+            padding: 22px 0 26px;
+            text-align: center;
+        }
+        .copyright {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 12px;
+            margin-top: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="container">
+            <div class="content">
+
+                <!-- МЕНЮ (как в твоём примере) -->
+                <div class="topbar">
+                    <a href="/" class="logo-link">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23e5c070'/%3E%3Ctext x='50' y='67' text-anchor='middle' fill='%231a1206' font-size='40' font-weight='bold'%3ESC%3C/text%3E%3C/svg%3E" class="logo" alt="StandClick">
+                    </a>
+                </div>
+
+                <div class="glass">
+                    <h2 style="margin-bottom: 8px;">🐞 Баги и идеи</h2>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 16px;">Сообщи о проблеме или предложи новую фичу</p>
+
+                    <!-- Форма отправки -->
+                    <div class="field">
+                        <div class="field-label">
+                            <span><b>Тип</b></span>
+                        </div>
+                        <div class="tabs" style="margin: 0 0 8px 0;">
+                            <button class="tab tab--active" id="typeBugBtn">🐛 Баг</button>
+                            <button class="tab" id="typeIdeaBtn">💡 Идея</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">
+                            <span><b>Заголовок</b></span>
+                        </div>
+                        <input type="text" id="feedbackTitle" class="input" placeholder="Коротко о проблеме/идее" maxlength="100">
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">
+                            <span><b>Описание</b></span>
+                        </div>
+                        <textarea id="feedbackDesc" rows="4" placeholder="Подробно опишите..."></textarea>
+                    </div>
+
+                    <div class="field">
+                        <div class="field-label">
+                            <span><b>Ваш ID в игре (опционально)</b></span>
+                        </div>
+                        <input type="text" id="feedbackUserId" class="input" placeholder="ST2-XXXX">
+                    </div>
+
+                    <button class="btn" id="submitBtn">📨 Отправить</button>
+                </div>
+
+                <!-- Список сообщений -->
+                <div class="glass" style="margin-top: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+                        <h3>📋 Сообщения</h3>
+                        <div class="status-filter">
+                            <button class="filter-btn active" data-filter="all">Все</button>
+                            <button class="filter-btn" data-filter="pending">🕒 В ожидании</button>
+                            <button class="filter-btn" data-filter="working">🔧 В работе</button>
+                            <button class="filter-btn" data-filter="done">✅ Готово</button>
+                        </div>
+                    </div>
+                    <div id="feedbacksList" class="items-list">
+                        <div class="empty-state">Загрузка...</div>
+                    </div>
+                </div>
+
+            </div>
+            <footer>
+                <div class="copyright">StandClick 2.0 — Багтрекер © 2026</div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <script>
+        // Инициализация Gun
+        const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun', 'https://peer.wallie.io/gun']);
+        const feedbacksRef = gun.get('standclick_feedback');
+        
+        let currentType = 'bug';
+        let currentFilter = 'all';
+        let allFeedbacks = [];
+
+        // Переключение типа
+        document.getElementById('typeBugBtn').onclick = () => {
+            currentType = 'bug';
+            document.getElementById('typeBugBtn').classList.add('tab--active');
+            document.getElementById('typeIdeaBtn').classList.remove('tab--active');
+        };
+        document.getElementById('typeIdeaBtn').onclick = () => {
+            currentType = 'idea';
+            document.getElementById('typeIdeaBtn').classList.add('tab--active');
+            document.getElementById('typeBugBtn').classList.remove('tab--active');
+        };
+
+        // Фильтры
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderFeedbacks();
+            };
+        });
+
+        // Отправка
+        document.getElementById('submitBtn').onclick = async () => {
+            const title = document.getElementById('feedbackTitle').value.trim();
+            const desc = document.getElementById('feedbackDesc').value.trim();
+            const userId = document.getElementById('feedbackUserId').value.trim();
+
+            if (!title) {
+                showToast('Введите заголовок!', 'error');
+                return;
+            }
+            if (!desc) {
+                showToast('Введите описание!', 'error');
+                return;
+            }
+
+            const feedback = {
+                id: Date.now(),
+                type: currentType,
+                title: title,
+                desc: desc,
+                userId: userId || 'Аноним',
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                votes: 0
+            };
+
+            // Сохраняем в Gun
+            feedbacksRef.get(feedback.id.toString()).put(feedback);
+            
+            // Очистка формы
+            document.getElementById('feedbackTitle').value = '';
+            document.getElementById('feedbackDesc').value = '';
+            document.getElementById('feedbackUserId').value = '';
+            
+            showToast('Спасибо! Сообщение отправлено ✅', 'success');
+        };
+
+        // Загрузка и отображение
+        function loadFeedbacks() {
+            allFeedbacks = [];
+            feedbacksRef.map().once((data, id) => {
+                if (data && data.id) {
+                    allFeedbacks.push(data);
+                    renderFeedbacks();
+                }
+            });
+            setTimeout(() => {
+                if (allFeedbacks.length === 0) {
+                    document.getElementById('feedbacksList').innerHTML = '<div class="empty-state">Пока нет сообщений. Будь первым! ✨</div>';
+                }
+                renderFeedbacks();
+            }, 2000);
+        }
+
+        function renderFeedbacks() {
+            let filtered = [...allFeedbacks];
+            
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(f => f.status === currentFilter);
+            }
+            
+            filtered.sort((a, b) => b.id - a.id);
+            
+            const container = document.getElementById('feedbacksList');
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет сообщений по этому фильтру</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(f => `
+                <div class="feedback-card">
+                    <div class="feedback-header">
+                        <span class="feedback-type ${f.type === 'bug' ? 'type-bug' : 'type-idea'}">
+                            ${f.type === 'bug' ? '🐛 БАГ' : '💡 ИДЕЯ'}
+                        </span>
+                        <span class="feedback-status ${getStatusClass(f.status)}">
+                            ${getStatusText(f.status)}
+                        </span>
+                    </div>
+                    <div class="feedback-title">${escapeHtml(f.title)}</div>
+                    <div class="feedback-desc">${escapeHtml(f.desc)}</div>
+                    <div class="feedback-meta">
+                        <span>🆔 ${escapeHtml(f.userId)}</span>
+                        <span>📅 ${new Date(f.createdAt).toLocaleDateString()}</span>
+                        <span>👍 ${f.votes || 0}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            if (status === 'pending') return 'status-pending';
+            if (status === 'working') return 'status-working';
+            if (status === 'done') return 'status-done';
+            return 'status-pending';
+        }
+
+        function getStatusText(status) {
+            if (status === 'pending') return '🕒 Ожидает';
+            if (status === 'working') return '🔧 В работе';
+            if (status === 'done') return '✅ Готово';
+            return '🕒 Ожидает';
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'error' ? '#ef4444' : '#10b981'};
+                color: white;
+                font-weight: bold;
+                padding: 12px 24px;
+                border-radius: 30px;
+                font-size: 14px;
+                z-index: 9999;
+                animation: fadeOut 2.5s ease;
+                white-space: nowrap;
+                box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // Добавляем анимацию
+        const style = document.createElement('style');
+        style.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }`;
+        document.head.appendChild(style);
+
+        // Запуск
+        loadFeedbacks();
+
+        // Для админки — глобальный доступ к feedbacksRef (чтобы менять статусы)
+        window.feedbackGun = feedbacksRef;
+        window.allFeedbacks = () => allFeedbacks;
+    </script>
+</body>
+</html>
