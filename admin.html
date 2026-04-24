@@ -459,16 +459,16 @@
         <div id="tab-promo" class="tab-content">
             <div class="grid-2">
                 <div class="card">
-                    <div class="card-title">✨ Создать промокод</div>
+                    <div class="card-title">✨ Создать промокод (GUN)</div>
                     <div class="form-group"><label>Код промокода</label><input type="text" id="promoCode" placeholder="Например: SUPER2026"></div>
                     <div class="form-group"><label>Награда (голда)</label><input type="number" id="promoGold" value="500"></div>
                     <div class="form-group"><label>Скин в награду</label><input type="text" id="promoSkin" placeholder="(опционально)"></div>
                     <div class="form-group"><label>Лимит использований</label><input type="number" id="promoLimit" value="9999"></div>
-                    <button id="createPromoBtn">🎫 Создать промокод</button>
+                    <button id="createPromoBtn">🎫 Создать промокод (для всех!)</button>
                 </div>
                 
                 <div class="card">
-                    <div class="card-title">📋 Активные промокоды</div>
+                    <div class="card-title">📋 Активные промокоды (глобальные)</div>
                     <div id="promosList" class="promo-list">Загрузка...</div>
                 </div>
             </div>
@@ -611,12 +611,10 @@
             document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8" class="loading">Загрузка игроков...</td></tr>';
             playersData = {};
             
-            // Получаем индекс всех игроков
             const playersIndex = gun.get('players_index');
             
             playersIndex.map().once((data, id) => {
                 if (id && data) {
-                    // Для каждого ID загружаем данные игрока
                     gun.get('p_' + id).once((playerData) => {
                         if (playerData && playerData.id) {
                             playersData[id] = playerData;
@@ -627,7 +625,6 @@
                 }
             });
             
-            // Таймаут на случай пустого списка
             setTimeout(() => {
                 if (Object.keys(playersData).length === 0) {
                     document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8" class="loading">Нет игроков в базе</td></tr>';
@@ -885,29 +882,59 @@
             document.getElementById('itemWeaponSkin').value = '';
         };
         
+        // ========== ГЛОБАЛЬНЫЕ ПРОМОКОДЫ (В GUN) ==========
+        
         function loadPromos() {
-            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
             const div = document.getElementById('promosList');
             if (!div) return;
-            if (Object.keys(promos).length === 0) {
+            
+            div.innerHTML = '<div style="color:#aaa;text-align:center;">Загрузка промокодов...</div>';
+            
+            const promosRef = gun.get('promocodes');
+            const promosList = [];
+            
+            promosRef.map().once((data, code) => {
+                if (code && data && data.gold !== undefined && data.gold !== null) {
+                    promosList.push({ code: code, ...data });
+                    renderPromosList(promosList);
+                }
+            });
+            
+            setTimeout(() => {
+                if (promosList.length === 0) {
+                    div.innerHTML = '<div style="color:#666;text-align:center;">Нет промокодов</div>';
+                }
+            }, 3000);
+        }
+        
+        function renderPromosList(promos) {
+            const div = document.getElementById('promosList');
+            if (!div) return;
+            
+            if (promos.length === 0) {
                 div.innerHTML = '<div style="color:#666;text-align:center;">Нет промокодов</div>';
                 return;
             }
-            div.innerHTML = Object.entries(promos).map(([code, data]) => `
+            
+            div.innerHTML = promos.map(p => `
                 <div class="promo-item">
-                    <div><strong style="color:#ffd700;">${escapeHtml(code)}</strong><br><span style="font-size:10px;color:#888;">+${data.gold}G | осталось: ${data.usesLeft}</span></div>
-                    <button onclick="deletePromo('${code}')" class="danger" style="padding:5px 12px;">🗑️</button>
+                    <div>
+                        <strong style="color:#ffd700;">${escapeHtml(p.code)}</strong><br>
+                        <span style="font-size:10px;color:#888;">+${p.gold}G | осталось: ${p.usesLeft}</span>
+                        ${p.skin ? `<span style="font-size:10px;color:#a855f7;"> | скин: ${escapeHtml(p.skin)}</span>` : ''}
+                    </div>
+                    <button onclick="deletePromo('${escapeHtml(p.code)}')" class="danger" style="padding:5px 12px;">🗑️</button>
                 </div>
             `).join('');
         }
         
         window.deletePromo = function(code) {
-            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
-            delete promos[code];
-            localStorage.setItem('standoff2_promos', JSON.stringify(promos));
-            loadPromos();
-            addLog(`🏷️ Удалил промокод`, code);
-            showToast(`Промокод ${code} удалён`);
+            if (confirm(`Удалить промокод ${code}?`)) {
+                gun.get('promocodes').get(code).put(null);
+                addLog(`🏷️ Удалил промокод`, code);
+                showToast(`Промокод ${code} удалён`);
+                loadPromos();
+            }
         };
         
         document.getElementById('createPromoBtn').onclick = () => {
@@ -918,12 +945,18 @@
             
             if (!code || isNaN(gold) || gold <= 0) { showToast('Заполните поля!', true); return; }
             
-            const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
-            promos[code] = { gold: gold, usesLeft: limit, skin: skin || null };
-            localStorage.setItem('standoff2_promos', JSON.stringify(promos));
+            const promoData = {
+                gold: gold,
+                usesLeft: limit,
+                skin: skin || null,
+                createdBy: currentAdminId,
+                createdAt: Date.now()
+            };
             
-            addLog(`🏷️ Создал промокод`, code, `+${gold}G, лимит: ${limit}`);
-            showToast(`✅ Промокод ${code} создан!`);
+            gun.get('promocodes').get(code).put(promoData);
+            
+            addLog(`🏷️ Создал промокод (GUN)`, code, `+${gold}G, лимит: ${limit}`);
+            showToast(`✅ Промокод ${code} создан в глобальной базе!`);
             loadPromos();
             
             document.getElementById('promoCode').value = '';
@@ -931,6 +964,8 @@
             document.getElementById('promoSkin').value = '';
             document.getElementById('promoLimit').value = '9999';
         };
+        
+        // ========== УПРАВЛЕНИЕ СЕРВЕРОМ ==========
         
         document.getElementById('maintenanceOnBtn').onclick = () => {
             gun.get('server_maintenance').put({ active: true });
@@ -1000,15 +1035,18 @@
             }
         };
         
+        // Вкладки
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+                if (btn.dataset.tab === 'promo') loadPromos();
             });
         });
         
+        // Статус соединения
         gun.on('hi', () => {
             document.getElementById('connectionStatus').innerHTML = '🟢 Онлайн';
             document.getElementById('connectionStatus').style.color = '#10b981';
@@ -1018,12 +1056,14 @@
             document.getElementById('connectionStatus').style.color = '#ef4444';
         });
         
+        // Подписка на рассылку
         gun.get('broadcast').on((data) => {
             if (data && data.message) {
                 showToast(`📢 РАССЫЛКА: ${data.message}`);
             }
         });
         
+        // Запуск
         initAdmin();
         loadAllPlayers();
         loadPromos();
@@ -1040,4 +1080,4 @@
         };
     </script>
 </body>
-                        </html>
+    </html>
