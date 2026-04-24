@@ -1,10 +1,9 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <title>ADMIN PANEL — StandClick 2.0</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -16,13 +15,11 @@
             padding: 20px;
         }
         
-        /* Контейнер */
         .admin-container {
             max-width: 1400px;
             margin: 0 auto;
         }
         
-        /* Шапка */
         .admin-header {
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(10px);
@@ -66,7 +63,6 @@
             50% { opacity: 0.5; }
         }
         
-        /* Поиск */
         .search-box {
             background: rgba(255,255,255,0.1);
             border-radius: 40px;
@@ -89,7 +85,6 @@
             color: rgba(255,255,255,0.5);
         }
         
-        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -116,7 +111,6 @@
             margin-top: 5px;
         }
         
-        /* Вкладки */
         .tabs {
             display: flex;
             gap: 10px;
@@ -155,7 +149,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Таблица игроков */
         .players-table {
             background: rgba(15,23,42,0.8);
             border-radius: 16px;
@@ -184,7 +177,6 @@
             background: rgba(168,85,247,0.1);
         }
         
-        /* Формы */
         .form-group {
             margin-bottom: 15px;
         }
@@ -205,7 +197,6 @@
             color: white;
             font-size: 14px;
             outline: none;
-            transition: all 0.2s;
         }
         
         input:focus, select:focus {
@@ -303,7 +294,6 @@
             color: #aaa;
         }
         
-        /* Модалка */
         .modal {
             display: none;
             position: fixed;
@@ -340,7 +330,6 @@
             color: #aaa;
         }
         
-        /* Адаптив */
         @media (max-width: 768px) {
             body { padding: 10px; }
             th, td { padding: 8px 10px; font-size: 12px; }
@@ -351,9 +340,7 @@
 <body>
     <div class="admin-container">
         <div class="admin-header">
-            <div class="logo">
-                🔐 STANDCLICK 2.0 — ADMIN PANEL
-            </div>
+            <div class="logo">🔐 STANDCLICK 2.0 — ADMIN PANEL</div>
             <div class="status">
                 <div class="status-dot"></div>
                 <span id="connectionStatus">Подключение...</span>
@@ -364,7 +351,6 @@
             </div>
         </div>
         
-        <!-- Статистика -->
         <div class="stats-grid">
             <div class="stat-card"><div class="stat-value" id="totalPlayers">0</div><div class="stat-label">Всего игроков</div></div>
             <div class="stat-card"><div class="stat-value" id="onlineNow">0</div><div class="stat-label">Сейчас онлайн</div></div>
@@ -372,7 +358,6 @@
             <div class="stat-card"><div class="stat-value" id="totalWins">0</div><div class="stat-label">Всего побед</div></div>
         </div>
         
-        <!-- Вкладки -->
         <div class="tabs">
             <button class="tab-btn active" data-tab="players">👥 Управление игроками</button>
             <button class="tab-btn" data-tab="economy">💰 Экономика</button>
@@ -382,7 +367,6 @@
             <button class="tab-btn" data-tab="logs">📋 Логи действий</button>
         </div>
         
-        <!-- Вкладка: Игроки -->
         <div id="tab-players" class="tab-content active">
             <div class="players-table">
                 <table>
@@ -394,34 +378,33 @@
                     </tbody>
                 </table>
             </div>
+            <button id="refreshPlayersBtn" style="margin-top:15px; width:100%;">🔄 Обновить список игроков</button>
         </div>
         
-        <!-- Вкладка: Экономика -->
         <div id="tab-economy" class="tab-content">
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">💰 Массовая выдача голды</div>
                     <div class="form-group"><label>ID игрока (или ALL для всех)</label><input type="text" id="economyTargetId" placeholder="ID игрока или ALL"></div>
                     <div class="form-group"><label>Количество голды</label><input type="number" id="economyGoldAmount" placeholder="Сколько добавить"></div>
-                    <button id="addGoldBtn" style="width:100%;">➕ Добавить голду</button>
+                    <button id="addGoldBtn">➕ Добавить голду</button>
                 </div>
                 
                 <div class="card">
                     <div class="card-title">📊 MMR массовое изменение</div>
                     <div class="form-group"><label>ID игрока (или ALL для всех)</label><input type="text" id="economyMmrTarget" placeholder="ID игрока или ALL"></div>
                     <div class="form-group"><label>Установить MMR</label><input type="number" id="economyMmrValue" placeholder="Новое значение"></div>
-                    <button id="setMmrBtn" style="width:100%;">🎯 Установить MMR</button>
+                    <button id="setMmrBtn">🎯 Установить MMR</button>
                 </div>
                 
                 <div class="card">
                     <div class="card-title">🏆 Массовый сброс</div>
-                    <button id="resetAllBtn" class="danger" style="width:100%;">⚠️ СБРОСИТЬ ВСЮ ЭКОНОМИКУ ⚠️</button>
+                    <button id="resetAllBtn" class="danger">⚠️ СБРОСИТЬ ВСЮ ЭКОНОМИКУ ⚠️</button>
                     <p style="font-size:11px; color:#666; margin-top:10px;">Сбросит голду и MMR у всех игроков</p>
                 </div>
             </div>
         </div>
         
-        <!-- Вкладка: Выдача предметов -->
         <div id="tab-items" class="tab-content">
             <div class="grid-2">
                 <div class="card">
@@ -430,15 +413,15 @@
                     <div class="form-group"><label>Название скина</label><input type="text" id="itemSkinName" placeholder="Например: AWP Dragon Lore"></div>
                     <div class="form-group"><label>Редкость</label>
                         <select id="itemSkinRarity">
-                            <option value="common">Обычный (common)</option>
-                            <option value="rare">Редкий (rare)</option>
-                            <option value="epic">Эпический (epic)</option>
-                            <option value="legendary">Легендарный (legendary)</option>
-                            <option value="arcane">Арканный (arcane)</option>
-                            <option value="mythic">Мифический (mythic)</option>
+                            <option value="common">Обычный</option>
+                            <option value="rare">Редкий</option>
+                            <option value="epic">Эпический</option>
+                            <option value="legendary">Легендарный</option>
+                            <option value="arcane">Арканный</option>
+                            <option value="mythic">Мифический</option>
                         </select>
                     </div>
-                    <button id="giveSkinBtn" style="width:100%;">🎁 Выдать скин</button>
+                    <button id="giveSkinBtn">🎁 Выдать скин</button>
                 </div>
                 
                 <div class="card">
@@ -451,7 +434,7 @@
                         </select>
                     </div>
                     <div class="form-group"><label>Количество</label><input type="number" id="itemPotionCount" value="1" min="1"></div>
-                    <button id="givePotionBtn" style="width:100%;">💊 Выдать зелья</button>
+                    <button id="givePotionBtn">💊 Выдать зелья</button>
                 </div>
                 
                 <div class="card">
@@ -468,12 +451,11 @@
                         </select>
                     </div>
                     <div class="form-group"><label>Название скина</label><input type="text" id="itemWeaponSkin" placeholder="Название скина"></div>
-                    <button id="giveWeaponSkinBtn" style="width:100%;">🔫 Выдать оружие</button>
+                    <button id="giveWeaponSkinBtn">🔫 Выдать оружие</button>
                 </div>
             </div>
         </div>
         
-        <!-- Вкладка: Промокоды -->
         <div id="tab-promo" class="tab-content">
             <div class="grid-2">
                 <div class="card">
@@ -482,7 +464,7 @@
                     <div class="form-group"><label>Награда (голда)</label><input type="number" id="promoGold" value="500"></div>
                     <div class="form-group"><label>Скин в награду</label><input type="text" id="promoSkin" placeholder="(опционально)"></div>
                     <div class="form-group"><label>Лимит использований</label><input type="number" id="promoLimit" value="9999"></div>
-                    <button id="createPromoBtn" style="width:100%;">🎫 Создать промокод</button>
+                    <button id="createPromoBtn">🎫 Создать промокод</button>
                 </div>
                 
                 <div class="card">
@@ -492,13 +474,12 @@
             </div>
         </div>
         
-        <!-- Вкладка: Управление сервером -->
         <div id="tab-server" class="tab-content">
             <div class="grid-2">
                 <div class="card">
                     <div class="card-title">🔧 Технические работы</div>
-                    <button id="maintenanceOnBtn" class="warning" style="width:100%; margin-bottom:10px;">🛑 Включить тех. работы</button>
-                    <button id="maintenanceOffBtn" class="success" style="width:100%;">✅ Выключить тех. работы</button>
+                    <button id="maintenanceOnBtn" class="warning">🛑 Включить тех. работы</button>
+                    <button id="maintenanceOffBtn" class="success" style="margin-top:10px;">✅ Выключить тех. работы</button>
                 </div>
                 
                 <div class="card">
@@ -509,25 +490,21 @@
                 
                 <div class="card">
                     <div class="card-title">⚠️ Очистка базы</div>
-                    <button id="clearInactiveBtn" class="warning" style="width:100%; margin-bottom:10px;">🗑️ Удалить неактивных (30+ дней)</button>
-                    <button id="clearAllBtn" class="danger" style="width:100%;">🔥 ПОЛНАЯ ОЧИСТКА БАЗЫ</button>
+                    <button id="clearInactiveBtn" class="warning">🗑️ Удалить неактивных (30+ дней)</button>
+                    <button id="clearAllBtn" class="danger" style="margin-top:10px;">🔥 ПОЛНАЯ ОЧИСТКА БАЗЫ</button>
                 </div>
             </div>
         </div>
         
-        <!-- Вкладка: Логи -->
         <div id="tab-logs" class="tab-content">
             <div class="card">
                 <div class="card-title">📋 История действий администратора</div>
-                <div id="logsList" style="max-height: 400px; overflow-y: auto; font-size: 13px;">
-                    <div style="color:#666; text-align:center;">Логи пусты</div>
-                </div>
-                <button id="clearLogsBtn" class="danger" style="margin-top:15px; width:100%;">🗑️ Очистить логи</button>
+                <div id="logsList" style="max-height: 400px; overflow-y: auto; font-size: 13px;"></div>
+                <button id="clearLogsBtn" class="danger" style="margin-top:15px;">🗑️ Очистить логи</button>
             </div>
         </div>
     </div>
     
-    <!-- Модалка редактирования игрока -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -539,34 +516,26 @@
     </div>
 
     <script>
-        // ========== ИНИЦИАЛИЗАЦИЯ GUN ==========
         const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun', 'https://peer.wallie.io/gun']);
         let playersData = {};
         let currentAdminId = null;
         let adminLogs = [];
         
-        // Загрузка сохранённых логов
         try {
             const savedLogs = localStorage.getItem('admin_logs');
             if (savedLogs) adminLogs = JSON.parse(savedLogs);
         } catch(e) {}
         
-        // Вход в админку (простенькая авторизация)
         function initAdmin() {
             const savedId = localStorage.getItem('admin_id');
             if (savedId) {
                 currentAdminId = savedId;
-                document.getElementById('adminName').innerText = `@${savedId.substring(0,8)}`;
+                document.getElementById('adminName').innerText = `@${currentAdminId.substring(0,8)}`;
                 return;
             }
             
             const adminCode = prompt('🔐 Введите код администратора:', '');
-            if (adminCode === 'ADMINS+×[$*#2930BRATISLOL00') {
-                currentAdminId = 'ADMIN_' + Math.random().toString(36).substring(2, 10).toUpperCase();
-                localStorage.setItem('admin_id', currentAdminId);
-                document.getElementById('adminName').innerText = `@${currentAdminId.substring(0,8)}`;
-                addLog('✅ Администратор вошёл в систему');
-            } else if (adminCode === 'STANDCLICK2025') {
+            if (adminCode === 'ADMINS+×[$*#2930BRATISLOL00' || adminCode === 'STANDCLICK2025') {
                 currentAdminId = 'ADMIN_' + Math.random().toString(36).substring(2, 10).toUpperCase();
                 localStorage.setItem('admin_id', currentAdminId);
                 document.getElementById('adminName').innerText = `@${currentAdminId.substring(0,8)}`;
@@ -610,7 +579,6 @@
             `).join('');
         }
         
-        // Показать уведомление
         function showToast(msg, isError = false) {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -620,7 +588,6 @@
             setTimeout(() => toast.remove(), 3000);
         }
         
-        // Обновление статистики
         async function updateStats() {
             let online = 0;
             let totalGold = 0;
@@ -640,29 +607,34 @@
             document.getElementById('totalWins').innerText = totalWins.toLocaleString();
         }
         
-        // Загрузка всех игроков
-        async function loadAllPlayers() {
+        function loadAllPlayers() {
             document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8" class="loading">Загрузка игроков...</td></tr>';
+            playersData = {};
             
-            return new Promise((resolve) => {
-                const playersIndex = gun.get('players_index');
-                playersIndex.map().once(async (data, id) => {
-                    if (id && data) {
-                        gun.get('p_' + id).once((playerData) => {
-                            if (playerData && playerData.id) {
-                                playersData[id] = playerData;
-                                renderPlayersTable();
-                            }
-                        });
-                    }
-                });
-                
-                setTimeout(() => {
-                    renderPlayersTable();
-                    updateStats();
-                    resolve();
-                }, 3000);
+            // Получаем индекс всех игроков
+            const playersIndex = gun.get('players_index');
+            
+            playersIndex.map().once((data, id) => {
+                if (id && data) {
+                    // Для каждого ID загружаем данные игрока
+                    gun.get('p_' + id).once((playerData) => {
+                        if (playerData && playerData.id) {
+                            playersData[id] = playerData;
+                            renderPlayersTable();
+                            updateStats();
+                        }
+                    });
+                }
             });
+            
+            // Таймаут на случай пустого списка
+            setTimeout(() => {
+                if (Object.keys(playersData).length === 0) {
+                    document.getElementById('playersTableBody').innerHTML = '<tr><td colspan="8" class="loading">Нет игроков в базе</td></tr>';
+                }
+                renderPlayersTable();
+                updateStats();
+            }, 5000);
         }
         
         let searchFilter = '';
@@ -677,20 +649,24 @@
             
             if (searchFilter) {
                 filtered = filtered.filter(p => 
-                    p.id?.toLowerCase().includes(searchFilter) || 
-                    p.nick?.toLowerCase().includes(searchFilter)
+                    (p.id && p.id.toLowerCase().includes(searchFilter)) || 
+                    (p.nick && p.nick.toLowerCase().includes(searchFilter))
                 );
             }
             
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="loading">Нет игроков</td></tr>';
+                if (Object.keys(playersData).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="loading">Загрузка игроков...</td></tr>';
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="8" class="loading">Нет игроков по вашему запросу</td></tr>';
+                }
                 return;
             }
             
             tbody.innerHTML = filtered.map(p => `
                 <tr>
-                    <td><span style="font-family:monospace; font-size:11px;">${p.id || '—'}</span></td>
-                    <td><strong>${p.nick || 'Игрок'}</strong></td>
+                    <td style="font-family:monospace; font-size:11px;">${escapeHtml(p.id || '—')}</td>
+                    <td><strong>${escapeHtml(p.nick || 'Игрок')}</strong></td>
                     <td style="color:#ffd700;">${Math.floor(p.gold || 0)} G</td>
                     <td style="color:#ef4444;">${p.mmr || 0}</td>
                     <td style="color:#10b981;">${p.wins || 0}</td>
@@ -704,7 +680,16 @@
             `).join('');
         }
         
-        // Редактирование игрока
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
         window.editPlayer = function(playerId) {
             const p = playersData[playerId];
             if (!p) return;
@@ -713,11 +698,11 @@
             const body = document.getElementById('editModalBody');
             
             body.innerHTML = `
-                <div class="form-group"><label>ID</label><input type="text" value="${p.id}" disabled></div>
-                <div class="form-group"><label>Ник</label><input type="text" id="editNick" value="${p.nick || 'Игрок'}"></div>
+                <div class="form-group"><label>ID</label><input type="text" value="${escapeHtml(p.id)}" disabled></div>
+                <div class="form-group"><label>Ник</label><input type="text" id="editNick" value="${escapeHtml(p.nick || 'Игрок')}"></div>
                 <div class="form-group"><label>Голда</label><input type="number" id="editGold" value="${Math.floor(p.gold || 0)}"></div>
                 <div class="form-group"><label>MMR</label><input type="number" id="editMmr" value="${p.mmr || 0}"></div>
-                <div class="form-group"><label>Победы (BP уровень)</label><input type="number" id="editWins" value="${p.wins || 0}"></div>
+                <div class="form-group"><label>Победы</label><input type="number" id="editWins" value="${p.wins || 0}"></div>
                 <button id="savePlayerEdit" class="success" style="width:100%;">💾 Сохранить изменения</button>
             `;
             
@@ -762,7 +747,11 @@
             document.getElementById('editModal').style.display = 'none';
         }
         
-        // Экономика
+        document.getElementById('refreshPlayersBtn').onclick = () => {
+            loadAllPlayers();
+            showToast('Обновление списка игроков...');
+        };
+        
         document.getElementById('addGoldBtn').onclick = () => {
             const target = document.getElementById('economyTargetId').value.trim();
             const amount = parseFloat(document.getElementById('economyGoldAmount').value);
@@ -836,7 +825,6 @@
             }
         };
         
-        // Выдача предметов
         document.getElementById('giveSkinBtn').onclick = () => {
             const target = document.getElementById('itemTargetId').value.trim();
             const skinName = document.getElementById('itemSkinName').value.trim();
@@ -889,7 +877,7 @@
             if (!target || !skinName) { showToast('Заполните поля!', true); return; }
             if (!playersData[target]) { showToast('Игрок не найден!', true); return; }
             
-            const weaponUpdate = { skin: { name: skinName, rarity: getSkinRarity(skinName) } };
+            const weaponUpdate = { skin: { name: skinName, rarity: 'epic' } };
             gun.get('p_' + target).get('weapons').get(weaponType).put(weaponUpdate);
             
             addLog(`🔫 Выдал оружие`, target, `${weaponType} → ${skinName}`);
@@ -897,23 +885,17 @@
             document.getElementById('itemWeaponSkin').value = '';
         };
         
-        function getSkinRarity(name) {
-            if (name.includes('Dragon Lore') || name.includes('Karambit')) return 'arcane';
-            if (name.includes('Gold') || name.includes('Blood')) return 'legendary';
-            return 'epic';
-        }
-        
-        // Промокоды
         function loadPromos() {
             const promos = JSON.parse(localStorage.getItem('standoff2_promos') || '{}');
             const div = document.getElementById('promosList');
+            if (!div) return;
             if (Object.keys(promos).length === 0) {
                 div.innerHTML = '<div style="color:#666;text-align:center;">Нет промокодов</div>';
                 return;
             }
             div.innerHTML = Object.entries(promos).map(([code, data]) => `
                 <div class="promo-item">
-                    <div><strong style="color:#ffd700;">${code}</strong><br><span style="font-size:10px;color:#888;">+${data.gold}G | осталось: ${data.usesLeft}</span></div>
+                    <div><strong style="color:#ffd700;">${escapeHtml(code)}</strong><br><span style="font-size:10px;color:#888;">+${data.gold}G | осталось: ${data.usesLeft}</span></div>
                     <button onclick="deletePromo('${code}')" class="danger" style="padding:5px 12px;">🗑️</button>
                 </div>
             `).join('');
@@ -950,7 +932,6 @@
             document.getElementById('promoLimit').value = '9999';
         };
         
-        // Управление сервером
         document.getElementById('maintenanceOnBtn').onclick = () => {
             gun.get('server_maintenance').put({ active: true });
             addLog(`🔧 Включил технические работы`);
@@ -1019,7 +1000,6 @@
             }
         };
         
-        // Переключение вкладок
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1029,7 +1009,6 @@
             });
         });
         
-        // Подписка на статус соединения
         gun.on('hi', () => {
             document.getElementById('connectionStatus').innerHTML = '🟢 Онлайн';
             document.getElementById('connectionStatus').style.color = '#10b981';
@@ -1039,27 +1018,26 @@
             document.getElementById('connectionStatus').style.color = '#ef4444';
         });
         
-        // Подписка на бродкаст (для отображения в админке)
         gun.get('broadcast').on((data) => {
             if (data && data.message) {
                 showToast(`📢 РАССЫЛКА: ${data.message}`);
             }
         });
         
-        // Запуск
         initAdmin();
         loadAllPlayers();
         loadPromos();
         renderLogs();
         
-        // Обновляем статистику каждые 10 секунд
-        setInterval(() => { updateStats(); }, 10000);
+        setInterval(() => { 
+            updateStats(); 
+            loadPromos();
+        }, 10000);
         
-        // Закрытие модалки по клику вне
         window.onclick = (e) => {
             const modal = document.getElementById('editModal');
             if (e.target === modal) closeEditModal();
         };
     </script>
 </body>
-</html>
+                        </html>
