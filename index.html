@@ -7,587 +7,232 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        button { outline: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        button { cursor: pointer; outline: none; }
         
-        @keyframes particlesEffect { from { background-position: 0 0, 0 0, 0 0; } to { background-position: 600px 600px, 400px 400px, 200px 200px; } }
-        body { background-color: #050000; background-image: radial-gradient(circle, rgba(255,77,77,0.2) 1.5px, transparent 1.5px), radial-gradient(circle, rgba(255,255,255,0.15) 1.5px, transparent 1.5px), radial-gradient(circle, rgba(255,255,255,0.1) 2.5px, transparent 2.5px); background-size: 100px 100px, 150px 150px, 250px 250px; animation: particlesEffect 40s linear infinite; font-family: 'Segoe UI', system-ui, sans-serif; color: white; min-height: 100vh; overflow-x: hidden; }
+        body { background: linear-gradient(135deg, #0a0a1a, #1a0a2e); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; }
         
         @keyframes flashScreen { 0% { box-shadow: inset 0 0 0 0 transparent; } 10% { box-shadow: inset 0 0 100px 30px rgba(225,29,72,0.5); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
         body.mega-flash { animation: flashScreen 0.7s ease-out; }
 
-        #introScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050000; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #introContent { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
-        @keyframes evaporate { 0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); } 100% { opacity: 0; transform: translateY(-80px) scale(1.2); filter: blur(15px); } }
-        .intro-title { font-size: 48px; color: #ff4d4d; text-transform: uppercase; letter-spacing: 5px; text-shadow: 0 0 20px #ff4d4d; margin-bottom: 40px; }
-        .intro-btn { padding: 15px 40px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, #ff4d4d, #cc0000); border: none; border-radius: 30px; cursor: pointer; color: #fff; box-shadow: 0 0 20px rgba(255,77,77,0.5); opacity: 0; animation: fadeInBtn 1s forwards 1s; display: block; margin: 0 auto; }
-        @keyframes fadeInBtn { to { opacity: 1; } }
-        .evaporating { animation: evaporate 1.2s forwards ease-in; pointer-events: none; }
+        #introScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a1a; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .intro-title { font-size: 48px; color: #ff4d4d; text-shadow: 0 0 20px #ff4d4d; margin-bottom: 40px; }
+        .intro-btn { padding: 15px 40px; font-size: 18px; background: linear-gradient(135deg, #ff4d4d, #cc0000); border: none; border-radius: 30px; color: white; cursor: pointer; }
+        @keyframes evaporate { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50px); filter: blur(10px); } }
+        .evaporating { animation: evaporate 1s forwards; }
 
-        #maintenanceScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        #maintenanceScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9998; align-items: center; justify-content: center; flex-direction: column; }
         
-        .main-layout { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 20px; width: 100%; max-width: 900px; margin: 0 auto; }
-        .main-left { flex: 1; min-width: 280px; height: 450px; position: relative; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent); border-radius: 20px; border: 1px solid rgba(255,77,77,0.3); display: flex; flex-direction: column; align-items: center; }
-        #heroCanvas { width: 100%; height: 330px; border-radius: 20px 20px 0 0; display: block; }
-        .edit-face-btn { width: 100%; padding: 15px; background: rgba(0,0,0,0.5); border: none; border-top: 1px solid rgba(255,77,77,0.3); color: #ff4d4d; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .edit-face-btn:hover { background: rgba(255,77,77,0.1); }
-        .main-right { flex: 1; min-width: 280px; display: flex; flex-direction: column; align-items: center; }
-
-        .container { max-width: 900px; margin: 0 auto; padding-top: 20px; text-align: center; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; text-align: center; }
         
-        .nav-wrap { position: sticky; top: 0; z-index: 100; background: rgba(5,0,0,0.92); backdrop-filter: blur(10px); padding: 8px 0 0 0; }
-        .nav-toggle-btn { display: block; width: 40px; height: 6px; background: rgba(255,77,77,0.4); border-radius: 3px; margin: 0 auto 6px auto; cursor: pointer; transition: background 0.2s; }
-        .nav-toggle-btn:hover { background: #ff4d4d; }
-        .nav { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; padding: 0 8px 8px 8px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s, transform 0.4s cubic-bezier(0.4,0,0.2,1); max-height: 200px; opacity: 1; transform: translateY(0); }
-        .nav.hidden { max-height: 0; opacity: 0; transform: translateY(-30px); pointer-events: none; }
-        .nav-btn { background: rgba(30,41,59,0.8); border: 1px solid rgba(255,77,77,0.15); color: #aaa; padding: 7px 11px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; letter-spacing: 0.3px; white-space: nowrap; transition: all 0.25s; display: flex; align-items: center; gap: 5px; }
-        .nav-btn svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
-        .nav-btn:hover { background: rgba(255,77,77,0.15); color: #fff; border-color: rgba(255,77,77,0.4); }
-        .nav-btn.active { background: rgba(255,77,77,0.18); color: #ff4d4d; border-color: #ff4d4d; box-shadow: 0 0 12px rgba(255,77,77,0.5), inset 0 0 8px rgba(255,77,77,0.1); text-shadow: 0 0 8px rgba(255,77,77,0.8); }
-        .page { display: none; width: 100%; animation: none; }
-        .page.active { display: block; animation: slideInPage 0.3s ease; }
-        @keyframes slideInPage { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .nav { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 30px; }
+        .nav-btn { background: rgba(30,41,59,0.8); border: none; padding: 8px 16px; border-radius: 20px; color: #aaa; cursor: pointer; font-weight: bold; }
+        .nav-btn.active { background: #ff4d4d; color: white; }
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .gold { font-size: 42px; font-weight: bold; color: #ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.5); display:flex; align-items:center; justify-content:center; gap:10px; }
+        .gold { font-size: 42px; font-weight: bold; color: #ffd700; margin: 10px 0; }
         .nick { font-size: 18px; color: #aaa; margin: 5px 0; }
-        .online-counter { background: rgba(0,0,0,0.5); border-radius: 30px; padding: 5px 15px; display: inline-flex; align-items:center; gap:6px; margin-bottom: 10px; font-size: 12px; }
         
-        .click-area { display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0; }
-        .click-btn { width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ff4d4d, #cc0000); border: none; color: #fff; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 0 25px rgba(255,77,77,0.4); display:flex; align-items:center; justify-content:center; transition: filter 0.2s; }
-        .click-btn:active { transform: scale(0.96); }
-        .mega-click-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; }
-        .mega-click-btn { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #e11d48, #9f1239); border: none; color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 0 20px rgba(225,29,72,0.5); transition: 0.2s; position: relative; z-index: 2; }
-        .mega-click-btn:disabled { background: #555; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
-        .mega-click-btn:active:not(:disabled) { transform: scale(0.92); }
-        .mega-timer { font-size: 10px; color: #aaa; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 10px; }
+        .click-area { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+        .click-btn { width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ff4d4d, #cc0000); border: none; color: white; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 0 25px rgba(255,77,77,0.4); }
+        .click-btn:active { transform: scale(0.95); }
+        .mega-click-btn { width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #e11d48, #9f1239); border: none; color: white; font-weight: bold; cursor: pointer; }
+        .mega-click-btn:disabled { opacity: 0.5; }
+        .mega-timer { font-size: 11px; color: #aaa; margin-top: 5px; }
+
+        .btn { background: #ff4d4d; border: none; padding: 10px 20px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; margin: 5px; }
+        .btn-danger { background: #9f1239; }
+        .card { background: rgba(15,23,42,0.8); border-radius: 20px; padding: 15px; margin: 15px auto; border: 1px solid rgba(255,77,77,0.2); max-width: 600px; }
         
-        @keyframes megaBurst { 0% { transform: scale(1); opacity: 1; box-shadow: 0 0 20px #e11d48, inset 0 0 20px #e11d48; } 100% { transform: scale(3.5); opacity: 0; box-shadow: 0 0 100px #ff0044, inset 0 0 50px #ff0044; } }
-        .mega-burst { position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: radial-gradient(circle, rgba(255,0,68,0.8), transparent); pointer-events: none; animation: megaBurst 0.6s ease-out forwards; z-index: 1; width: 70px; height: 70px; }
-
-        .btn { background: #ff4d4d; color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px; display:inline-flex; align-items:center; justify-content:center; gap:6px; transition: 0.2s; }
-        .btn:hover { box-shadow: 0 0 10px rgba(255,77,77,0.5); }
-        .btn-danger { background: #9f1239; color: white; }
-        .card { background: rgba(15, 23, 42, 0.8); border-radius: 20px; padding: 15px; margin: 15px auto; border: 1px solid rgba(255,77,77,0.2); width: 100%; max-width: 600px; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 300px; overflow-y: auto; }
+        .item-card { background: #1e293b; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; border-left: 3px solid #ff4d4d; }
+        .item-card:hover { background: #2d3a4e; }
         
-        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 350px; overflow-y: auto; }
-        .item-card { background: #1e293b; border-radius: 12px; padding: 8px; text-align: center; cursor: pointer; transition: 0.1s; border-left: 3px solid #ff4d4d; }
-        .item-card:hover { transform: translateY(-2px); background: #2d3a4e; }
-        .weapon-card { background: #1e293b; border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid #ff4d4d; text-align: left; }
+        .id-box { background: rgba(0,0,0,0.4); border-radius: 14px; padding: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ff4d4d; margin-top: 10px; }
+        #playerIdDisplay { font-size: 12px; color: #ff4d4d; }
         
-        .id-box { background: rgba(0,0,0,0.4); border-radius: 14px; padding: 10px 14px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ff4d4d; gap: 10px; width: 100%; }
-        .id-box span:first-child { font-size: 13px; color: #aaa; flex-shrink: 0; }
-        #playerIdDisplay { font-size: 13px; color: #ff4d4d; font-weight: bold; flex-grow: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .promo-banner { background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; padding: 15px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); } 50% { box-shadow: 0 0 0 10px rgba(245,158,11,0); } }
+        .promo-banner span { font-weight: bold; font-size: 18px; }
+        .promo-banner button { background: white; color: #ef4444; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         
-        .friend-input-wrapper { display: flex; gap: 8px; margin-top: 12px; width: 100%; align-items: center; }
-        .friend-input-wrapper input { flex: 1; background: #1e293b; border: 1px solid #ff4d4d; padding: 12px 15px; border-radius: 30px; color: white; text-align: left; font-size: 14px; outline: none; min-width: 0; }
-        .friend-input-wrapper .btn { width: 45px; height: 45px; padding: 0; margin: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
-
-        .friend-item { background: #1e293b; border-radius: 14px; padding: 12px; margin-bottom: 10px; border-left: 3px solid #ff4d4d; display: flex; flex-direction: column; gap: 8px; text-align: left; }
-        .friend-item-top { display: flex; justify-content: space-between; align-items: center; }
-        .request-item { background: #1e293b; border-radius: 14px; padding: 12px; margin-bottom: 10px; border-left: 3px solid #ff8800; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-
-        .shop-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
-        .shop-banner { flex: 1; min-width: 250px; animation: slideUpShop 1s cubic-bezier(0.1, 1, 0.2, 1) forwards; opacity: 0; transform: translateY(80px); }
-        .shop-banner img { width: 100%; border-radius: 20px; box-shadow: 0 0 25px rgba(255,77,77,0.4); border: 2px solid #ff4d4d; }
-        .shop-cases { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 10px; }
-        @keyframes slideUpShop { to { opacity: 1; transform: translateY(0); } }
-
-        #inspectModal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:1001; }
-        #inspectCanvas { width:100%; max-width:600px; height:400px; max-height: 400px; touch-action: none; cursor: grab; }
-        #inspectCanvas:active { cursor: grabbing; }
-
-        #gameCanvas3D { width: 100%; max-width: 500px; height: auto; min-height: 300px; aspect-ratio: 1/1; border: 2px solid #ff4d4d; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: block; margin: 0 auto; background: #1e293b; }
-        .game-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 0 10px; max-width: 500px; margin-left:auto; margin-right:auto; }
-        .joystick-zone { width: 120px; height: 120px; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 77, 77, 0.3); border-radius: 50%; position: relative; touch-action: none; }
-        .joystick-knob { width: 40px; height: 40px; background: #ff4d4d; border-radius: 50%; position: absolute; top: 40px; left: 40px; pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
-        .shoot-btn { width: 90px; height: 90px; background: radial-gradient(circle at 30% 30%, #dc2626, #991b1b); border: none; border-radius: 50%; color: white; font-weight: bold; font-size: 14px; user-select: none; touch-action: none; box-shadow: 0 0 15px rgba(220, 38, 38, 0.5); display:flex; align-items:center; justify-content:center; flex-direction:column; }
-        .shoot-btn:active { transform: scale(0.95); }
-
-        .svg-icon { width: 20px; height: 20px; fill: currentColor; }
+        .shop-layout { display: flex; flex-wrap: wrap; gap: 20px; }
+        .shop-case { flex: 1; min-width: 200px; background: #1e293b; border-radius: 16px; padding: 15px; text-align: center; }
         
-        .promo-input { display: flex; gap: 10px; margin-top: 10px; width: 100%; align-items: center; }
-        .promo-input input { flex: 1; background: #1e293b; border: 1px solid #ff4d4d; padding: 12px 15px; border-radius: 30px; color: white; text-align: center; font-size: 14px; outline: none; min-width: 0; }
-
-        .craft-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; visibility: hidden; opacity: 0; transition: 0.2s; }
-        .craft-modal.open { visibility: visible; opacity: 1; }
-        .craft-window { background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border-radius: 30px; padding: 20px; max-width: 400px; width: 90%; border: 2px solid #ff4d4d; }
-        .craft-slots { display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
-        .craft-slot, .craft-result { background: #1e293b; width: 80px; height: 100px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #334155; }
-        .craft-result { border-color: #ff4d4d; }
-
-        .bp-track { display: flex; overflow-x: auto; gap: 8px; padding: 10px 0; }
-        .bp-step { min-width: 80px; background: #1e293b; border-radius: 12px; padding: 8px; text-align: center; border: 2px solid #334155; flex-shrink: 0; }
-        .bp-step.claimed { border-color: #ffd700; background: rgba(255,215,0,0.1); }
-        .bp-step.available { border-color: #ff4d4d; animation: bpGlow 1.5s infinite alternate; }
-        .bp-step.secret { border-color: #a855f7; }
-        @keyframes bpGlow { from { box-shadow: 0 0 5px #ff4d4d; } to { box-shadow: 0 0 15px #ff4d4d; } }
-        .bp-icon { font-size: 28px; }
-        .bp-label { font-size: 10px; color: #aaa; margin-top: 4px; }
-        .bp-claim-btn { background: #ff4d4d; border: none; color: #fff; border-radius: 8px; padding: 4px 8px; font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .bp-claim-btn:disabled { background: #333; cursor: not-allowed; }
-
-        .potion-card { background: #1e293b; border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid #ff4d4d; display: flex; align-items: center; gap: 12px; }
-        .potion-card.red-potion { border-left-color: #ef4444; }
-        .potion-card.green-potion { border-left-color: #10b981; }
-        .potion-icon { font-size: 36px; }
-        .potion-timer { font-size: 11px; color: #ffd700; font-weight: bold; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 8px; }
-
-        #activePotionDisplay { position: fixed; bottom: 20px; right: 15px; z-index: 500; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-        .active-potion-badge { background: rgba(0,0,0,0.85); border-radius: 12px; padding: 6px 10px; display: flex; align-items: center; gap: 6px; border: 1px solid; font-size: 12px; font-weight: bold; }
-
-        @keyframes maintGlow { 0%,100% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; color: #ffd700; } 50% { text-shadow: 0 0 25px #ffaa00, 0 0 50px #ffaa00; color: #ffaa00; } }
-        .maint-text { animation: maintGlow 1.5s infinite; font-size: 28px; font-weight: bold; margin-top: 15px; }
-        .maint-icon { font-size: 60px; animation: maintGlow 1.5s infinite; }
-
-        .admin-panel { background: linear-gradient(135deg, #0f0f1a, #1a0a2e); border: 2px solid #a855f7; border-radius: 20px; padding: 20px; max-width: 500px; margin: 0 auto; }
-        .admin-field { background: #1e293b; border: 1px solid #a855f7; padding: 12px 15px; border-radius: 12px; color: white; font-size: 14px; outline: none; width: 100%; margin-bottom: 10px; }
-        .admin-btn { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; margin: 5px; }
-        .admin-btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-
         @media (max-width: 600px) {
-            .intro-title { font-size: 36px; }
-            #heroCanvas { height: 260px; }
-            .main-left { height: 380px; }
+            .click-btn { width: 120px; height: 120px; font-size: 16px; }
             .gold { font-size: 32px; }
-            .click-btn { width: 130px; height: 130px; font-size: 20px; }
-            .mega-click-btn { width: 60px; height: 60px; font-size: 10px; }
-            .mega-burst { width: 60px; height: 60px; }
-            .shop-banner img { max-height: 200px; object-fit: cover; }
         }
     </style>
 </head>
 <body>
 
-<audio id="bgMusic" src="music.mp3" loop preload="auto"></audio>
-
 <div id="introScreen">
-    <div id="introContent">
-        <h1 class="intro-title">StandClick</h1>
-        <button class="intro-btn" onclick="startApp()">ПРОДОЛЖИТЬ</button>
-    </div>
+    <h1 class="intro-title">StandClick 2.0</h1>
+    <button class="intro-btn" onclick="startApp()">ПРОДОЛЖИТЬ</button>
 </div>
 
 <div id="maintenanceScreen">
-    <div class="maint-icon">🔧</div>
-    <div class="maint-text">⚠ ТЕХНИЧЕСКИЕ РАБОТЫ ⚠</div>
-    <p style="color:#aaa; margin-top:15px; font-size:14px;">Сервер временно недоступен. Идёт обновление игры!</p>
-    <p style="color:#666; margin-top:8px; font-size:11px;">Пожалуйста, подождите и обновите страницу позже.</p>
+    <h2>🔧 ТЕХНИЧЕСКИЕ РАБОТЫ</h2>
+    <p>Сервер временно недоступен</p>
 </div>
 
 <div class="container" id="mainContainer" style="display:none;">
     
-    <div class="nav-wrap">
-        <div class="nav-toggle-btn" id="navToggleBtn" title="Скрыть/показать меню"></div>
-        <div class="nav" id="mainNav">
-            <button class="nav-btn active" data-page="main" title="Главная">
-                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> Главная
-            </button>
-            <button class="nav-btn" data-page="minigame" title="Матч">
-                <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5 1.5 1.5-.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg> Матч
-            </button>
-            <button class="nav-btn" data-page="inventory" title="Инв.">
-                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L11 13.17l7.59-7.59L20 7l-9 9z"/></svg> Инв.
-            </button>
-            <button class="nav-btn" data-page="craft" title="Крафт">
-                <svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7c-1.1 2.4-.7 5.4 1.3 7.4 1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.8.8 2.1.8 2.9 0l.9-.9c.8-.8.8-2.1 0-2.8z"/></svg> Крафт
-            </button>
-            <button class="nav-btn" data-page="shop" title="Кейсы">
-                <svg viewBox="0 0 24 24"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg> Кейсы
-            </button>
-            <button class="nav-btn" data-page="friends" title="Друзья">
-                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Друзья
-            </button>
-            <button class="nav-btn" data-page="promo" title="Промо">
-                <svg viewBox="0 0 24 24"><path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg> Промо
-            </button>
-            <button class="nav-btn" data-page="battlepass" title="Battle Pass">
-                <svg viewBox="0 0 24 24"><path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2 11.5 2zm1 14.5h-2v-2h2v2zm1.34-4.83c-.37.26-.34.47-.34.83h-2c0-.98.01-1.44.64-1.85.48-.32 1.36-.78 1.36-1.65 0-.69-.56-1.25-1.25-1.25s-1.25.56-1.25 1.25H8.75c0-1.79 1.46-3.25 3.25-3.25s3.25 1.46 3.25 3.25c0 1.67-1.2 2.37-1.41 2.47z"/></svg> Battle Pass
-            </button>
-            <button class="nav-btn" data-page="potions" title="Зелья">
-                <svg viewBox="0 0 24 24"><path d="M9 3v1H5v2h1l1 14h10L18 6h1V4h-4V3H9zm2 2h2v1h-2V5zm-2.9 3h7.8l-.9 12H8.1L7.1 8z"/></svg> Зелья
-            </button>
-            <button class="nav-btn" data-page="donate" title="Донат">
-                <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg> Донат
-            </button>
-            <button class="nav-btn" data-page="stats" title="Статистика">
-                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg> Статы
-            </button>
-        </div>
+    <div class="nav">
+        <button class="nav-btn active" data-page="main">🏠 Главная</button>
+        <button class="nav-btn" data-page="inventory">🎒 Инвентарь</button>
+        <button class="nav-btn" data-page="shop">🎁 Кейсы</button>
+        <button class="nav-btn" data-page="stats">📊 Статы</button>
     </div>
 
+    <!-- ГЛАВНАЯ -->
     <div id="page-main" class="page active">
-        <div class="main-layout">
-            <div class="main-left">
-                <div id="agentMessage" style="position:absolute; top: 20px; background: rgba(0,0,0,0.8); border: 2px solid #ff4d4d; color: white; padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; opacity: 0; transition: opacity 0.4s; pointer-events: none; z-index: 10; text-shadow: 0 0 5px rgba(255,77,77,0.8); text-align: center;">Привет я твой агент!</div>
-                <canvas id="heroCanvas"></canvas>
-                <input type="file" id="faceUpload" accept="image/*" style="display:none">
-                <button class="edit-face-btn" style="border-radius: 0;" onclick="document.getElementById('faceUpload').click()">
-                    <svg class="svg-icon" viewBox="0 0 24 24" style="vertical-align:middle; margin-right:5px;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                    Редактировать лицо
-                </button>
-                <button class="edit-face-btn" style="border-radius: 0 0 20px 20px; border-top: none;" onclick="document.getElementById('clothesModal').style.display='flex'">
-                    👕 Одежда
-                </button>
-            </div>
-
-            <div class="main-right">
-                <div class="online-counter" id="onlineCounter">
-                    <svg class="svg-icon" style="fill:#10b981; width:14px; height:14px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
-                    Подключение...
-                </div>
-                
-                <div class="gold" id="gold">
-                    <svg viewBox="0 0 24 24" width="36" height="36" fill="#ffd700"><circle cx="12" cy="12" r="10"/><text x="12" y="16" font-size="12" text-anchor="middle" fill="#000" font-weight="bold">G</text></svg>
-                    0 G
-                </div>
-                
-                <div class="nick" id="nick">Игрок</div>
-                <div class="nick" id="rank">
-                    <svg class="svg-icon" viewBox="0 0 24 24" style="fill:#94a3b8;"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10z"/></svg>
-                    Silver I
-                </div>
-                
-                <div id="skinBonusDisplay" style="font-size:12px;color:#ffaa00;margin:4px 0;">Авто: 0 G/сек</div>
-                
-                <div class="click-area">
-                    <button class="click-btn" id="clickBtn">
-                        <svg viewBox="0 0 24 24" width="40" height="40" fill="#fff"><path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C16.17 17.98 14.21 19 12 19z"/></svg>
-                    </button>
-                    <div class="mega-click-wrapper">
-                        <button class="mega-click-btn" id="megaClickBtn">MEGA<br>+1000G</button>
-                        <div class="mega-timer" id="megaTimer">00:00:00</div>
-                    </div>
-                </div>
-
-                <div class="card" style="width:100%;">
-                    <div class="id-box">
-                        <span>ID:</span>
-                        <span id="playerIdDisplay">—</span>
-                        <button class="btn" style="padding:5px 12px;margin:0;font-size:12px;flex-shrink:0;" onclick="copyPlayerId()">КОП.</button>
-                    </div>
-                    <div style="margin-top:10px; display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-                        <button class="btn" id="changeNickBtn">Сменить ник</button>
-                        <button class="btn btn-danger" id="resetBtn">Сброс</button>
-                    </div>
-                </div>
+        <div>
+            <canvas id="heroCanvas" style="width:100%; max-width:400px; height:300px; background:#1a1a2e; border-radius:20px; margin:0 auto; display:block;"></canvas>
+            <input type="file" id="faceUpload" accept="image/*" style="display:none">
+            <button class="btn" style="margin-top:10px;" onclick="document.getElementById('faceUpload').click()">📷 Редактировать лицо</button>
+        </div>
+        
+        <div class="online-counter" id="onlineCounter">🟢 Подключение...</div>
+        <div class="gold" id="gold">💰 0 G</div>
+        <div class="nick" id="nick">Игрок</div>
+        <div class="nick" id="rank">🏅 Новичок</div>
+        <div id="autoBonus" style="font-size:12px;color:#ffaa00;">Авто: 0 G/сек</div>
+        
+        <!-- === БЛОК С ПРОМОКОДАМИ === -->
+        <div id="promoContainer" style="margin: 10px 0;"></div>
+        
+        <div class="click-area">
+            <button class="click-btn" id="clickBtn">🔫 КЛИК</button>
+            <div>
+                <button class="mega-click-btn" id="megaClickBtn">MEGA<br>+1000G</button>
+                <div class="mega-timer" id="megaTimer">00:00:00</div>
             </div>
         </div>
-    </div>
 
-    <div id="page-minigame" class="page">
         <div class="card">
-            <h3 style="margin-bottom:10px; color:#ff4d4d;">2D Рукопашный Бой</h3>
-            <p style="font-size: 11px; color:#aaa; margin-bottom:15px;">Бегай и бей врагов своими перчатками! Выживи 5 волн.</p>
-            
-            <button class="btn" id="startMiniGameBtn" style="width:100%; padding: 15px; font-size:16px;">НАЧАТЬ БОЙ</button>
-            
-            <div id="minigameUI" style="display:none;">
-                <div id="waveDisplay" style="color:#ff4d4d; font-weight:bold; margin-bottom:5px; font-size:18px;">Волна: 1 / 5</div>
-                <canvas id="gameCanvas3D"></canvas>
-                <div class="game-controls">
-                    <div class="joystick-zone" id="joystickZone">
-                        <div class="joystick-knob" id="joystickKnob"></div>
-                    </div>
-                    <button class="shoot-btn" id="minigameShootBtn">
-                        <svg viewBox="0 0 24 24" width="28" height="28" fill="#fff" style="margin-bottom:2px;"><path d="M19 13.5c0 2.48-2.02 4.5-4.5 4.5H10c-2.48 0-4.5-2.02-4.5-4.5v-3.7l1.52-1.52c.26-.26.63-.37.98-.28l2.5.63V4.5C10.5 3.67 11.17 3 12 3s1.5.67 1.5 1.5v4.61l2.85-.95c.5-.17 1.05.02 1.34.46l1.31 1.96V13.5zM12 1c-1.93 0-3.5 1.57-3.5 3.5v3.45l-.47-.12c-1.07-.26-2.18.06-2.95.83L3.5 10.24V13.5c0 3.59 2.91 6.5 6.5 6.5h4.5c3.59 0 6.5-2.91 6.5-6.5v-3.66l-1.9-2.85c-.86-1.29-2.42-1.89-3.92-1.4l-1.68.56V4.5C13.5 2.57 11.93 1 12 1z"/></svg>
-                        УДАР
-                    </button>
-                </div>
+            <div class="id-box">
+                <span>ID:</span>
+                <span id="playerIdDisplay">—</span>
+                <button class="btn" style="padding:5px 12px;" onclick="copyPlayerId()">КОП.</button>
             </div>
-        </div>
-        <div class="card" style="display:flex; justify-content:space-around;">
-            <div>Побед: <strong id="wins" style="color:#10b981;">0</strong></div>
-            <div>MMR: <strong id="mmr" style="color:#ff4d4d;">0</strong></div>
+            <button class="btn" id="changeNickBtn">Сменить ник</button>
+            <button class="btn btn-danger" id="resetBtn">Сброс</button>
         </div>
     </div>
 
+    <!-- ИНВЕНТАРЬ -->
     <div id="page-inventory" class="page">
         <div class="card">
-            <h3 style="color:#ff4d4d; margin-bottom: 10px;">ИНВЕНТАРЬ</h3>
-            <div style="font-size: 11px; color: #aaa; margin-bottom: 15px;">Нажми на любой предмет, чтобы его надеть</div>
+            <h3>🎒 ИНВЕНТАРЬ</h3>
             <div id="skinsList" class="items-grid"></div>
-            
-            <hr style="border-color: rgba(255,77,77,0.3); margin: 20px 0;">
-            
-            <h4 style="color:#ff4d4d; margin-bottom: 10px;">ТЕКУЩАЯ ЭКИПИРОВКА</h4>
+            <hr>
+            <h4>⚔️ ОРУЖИЕ</h4>
             <div id="weaponsList"></div>
         </div>
     </div>
 
-    <div id="page-craft" class="page">
-        <div class="card">
-            <h3 style="color:#ff4d4d;">КРАФТ СКИНОВ</h3>
-            <p style="font-size:12px; color:#aaa;">Выбери 3 одинаковых скина для крафта</p>
-            <div id="craftAvailable" class="items-grid" style="max-height: 200px;"></div>
-            <button class="btn" id="openCraftWindowBtn" style="background:linear-gradient(135deg,#9b59b6,#8e44ad); color:#fff; width:100%; margin-top:15px;">ОТКРЫТЬ ОКНО КРАФТА</button>
-        </div>
-    </div>
-
+    <!-- КЕЙСЫ -->
     <div id="page-shop" class="page">
-        <div class="shop-layout" style="max-width:900px; margin: 0 auto;">
-            <div class="shop-banner">
-                <a href="https://ibb.co/rRHnLfyj" target="_blank"><img src="https://i.ibb.co/1tTHpJ2g/IMG-20260411-000519-239.jpg" alt="IMG 20260411 000519 239" border="0" style="width: 100%; border-radius: 20px; box-shadow: 0 0 25px rgba(255,77,77,0.4); border: 2px solid #ff4d4d;"></a>
-            </div>
-            
-            <div class="shop-cases">
-                <div class="card" style="margin:0;">
-                    <h3 style="color:#ff4d4d;">Обычный кейс</h3>
-                    <p style="color:#ffd700; font-weight:bold;">500 G</p>
-                    <p style="font-size:10px; color:#aaa;">Могут выпасть синие перчатки</p>
-                    <button class="btn" id="openCommonCase" style="width:100%; margin-top:10px;">Открыть</button>
-                </div>
-                <div class="card" style="margin:0;">
-                    <h3 style="color:#ff4d4d;">Редкий кейс</h3>
-                    <p style="color:#ffd700; font-weight:bold;">1500 G</p>
-                    <p style="font-size:10px; color:#aaa;">Могут выпасть красные перчатки</p>
-                    <button class="btn" id="openRareCase" style="width:100%; margin-top:10px;">Открыть</button>
-                </div>
-                <div class="card" style="margin:0;">
-                    <h3 style="color:#ff4d4d;">Легендарный кейс</h3>
-                    <p style="color:#ffd700; font-weight:bold;">5000 G</p>
-                    <p style="font-size:10px; color:#aaa;">Могут выпасть оранжевые перчатки и ножи</p>
-                    <button class="btn" id="openLegendaryCase" style="width:100%; margin-top:10px;">Открыть</button>
-                </div>
-            </div>
+        <div class="shop-layout">
+            <div class="shop-case"><h3>📦 Обычный</h3><p>500 G</p><button class="btn" id="openCommonCase">Открыть</button></div>
+            <div class="shop-case"><h3>✨ Редкий</h3><p>1500 G</p><button class="btn" id="openRareCase">Открыть</button></div>
+            <div class="shop-case"><h3>🔥 Легендарный</h3><p>5000 G</p><button class="btn" id="openLegendaryCase">Открыть</button></div>
         </div>
     </div>
 
-    <div id="page-friends" class="page">
-        <div class="card">
-            <h3 style="color:#ff4d4d;">ДРУЗЬЯ</h3>
-            <div class="friend-input-wrapper">
-                <input type="text" id="friendIdInput" placeholder="Введи ID друга">
-                <button class="btn" id="sendFriendRequestBtn">+</button>
-            </div>
-            <h4 style="color:#ff4d4d;margin-top:18px;margin-bottom:8px;">ВХОДЯЩИЕ ЗАЯВКИ</h4>
-            <div id="friendRequestsList"><div style="color:#666;text-align:center;padding:10px;">Нет заявок</div></div>
-            <h4 style="color:#ff4d4d;margin-top:18px;margin-bottom:8px;">МОИ ДРУЗЬЯ</h4>
-            <div id="friendsList"><div style="color:#666;text-align:center;padding:10px;">Нет друзей</div></div>
-        </div>
-    </div>
-
-    <div id="page-promo" class="page">
-        <div class="card">
-            <h3 style="color:#ff4d4d;">Активировать промокод</h3>
-            <div class="promo-input"><input type="text" id="promoCodeInput" placeholder="Введите промокод"><button class="btn" id="activatePromoBtn">ОК</button></div>
-        </div>
-        <div class="card" style="margin-top:10px;">
-            <h3 style="color:#ffd700;margin-bottom:12px;">🎉 ПРАЗДНИЧНЫЕ ИВЕНТЫ</h3>
-            <div id="eventsList"></div>
-        </div>
-    </div>
-
-    <div id="page-battlepass" class="page">
-        <div class="card">
-            <h3 style="color:#ffd700; text-shadow: 0 0 10px #ffd700;">⭐ BATTLE PASS</h3>
-            <p style="font-size:12px;color:#aaa;margin:6px 0;">Получай награды за матчи! Каждая победа даёт +1 уровень.</p>
-            <div style="background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:12px; padding:8px 14px; margin:10px 0; display:flex; justify-content:space-between; align-items:center;">
-                <span style="color:#ffd700; font-weight:bold;">Уровень BP: <span id="bpLevel">0</span> / 30</span>
-                <span style="color:#aaa; font-size:12px;">Побед для след. уровня: <span id="bpWinsNeeded">—</span></span>
-            </div>
-            <div class="bp-track" id="bpTrack"></div>
-        </div>
-    </div>
-
+    <!-- СТАТИСТИКА -->
     <div id="page-stats" class="page">
         <div class="card">
-            <h3 style="color:#ff4d4d;margin-bottom:15px;">📊 СТАТИСТИКА</h3>
+            <h3>📊 СТАТИСТИКА</h3>
             <div id="statsContent"></div>
         </div>
     </div>
-
-    <div id="page-potions" class="page">
-        <div class="card">
-            <h3 style="color:#a855f7;">🧪 ЗЕЛЬЯ</h3>
-            <p style="font-size:12px;color:#aaa;margin:6px 0 14px 0;">Зелья получаются за катки в Battle Pass. Нажми "Забрать" чтобы взять зелье.</p>
-            <div id="pendingPotionsList"></div>
-            <hr style="border-color:rgba(168,85,247,0.3); margin:15px 0;">
-            <h4 style="color:#a855f7; margin-bottom:10px;">МОИ ЗЕЛЬЯ</h4>
-            <div id="ownedPotionsList"></div>
-        </div>
-    </div>
-
-    <div id="page-donate" class="page">
-        <div class="card">
-            <h3 style="color:#f59e0b;text-shadow:0 0 10px #f59e0b;">💰 ДОНАТ МАГАЗИН</h3>
-            <p style="font-size:12px;color:#aaa;margin:6px 0 15px 0;">Покупай предметы за голду. Нажми "Купить" чтобы начать.</p>
-            <div id="donateItemsList"></div>
-        </div>
-    </div>
 </div>
 
-<div id="donateChatModal" style="display:none;position:fixed;bottom:0;left:0;width:100%;z-index:2000;padding:10px;">
-    <div style="background:linear-gradient(135deg,#0f0f1a,#1a1a2e);border:2px solid #f59e0b;border-radius:20px;max-width:500px;margin:0 auto;padding:15px;box-shadow:0 0 30px rgba(245,158,11,0.3);">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <div style="width:40px;height:40px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🤖</div>
-            <div style="font-weight:bold;color:#f59e0b;">ShopBot</div>
-        </div>
-        <div id="donateChatMessages" style="min-height:60px;margin-bottom:12px;font-size:14px;line-height:1.6;"></div>
-        <div id="donateChatButtons" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+<!-- РУЛЕТКА -->
+<div id="rouletteModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; flex-direction:column;">
+    <h2 style="color:#ff4d4d;">Открытие кейса</h2>
+    <div style="width:90%; max-width:600px; height:120px; background:#1e293b; border:2px solid #ff4d4d; border-radius:10px; overflow:hidden;">
+        <div id="rouletteContainer" style="display:flex; height:100%; width:max-content; transition:transform 5s cubic-bezier(0.1,0,0.1,1);"></div>
     </div>
-</div>
-
-<div id="activePotionDisplay"></div>
-
-<div id="rouletteModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95); z-index:1003; flex-direction:column; align-items:center; justify-content:center;">
-    <h2 style="color:#ff4d4d; margin-bottom:20px; text-transform:uppercase; letter-spacing:3px;">Открытие кейса</h2>
-    <div style="width: 90%; max-width: 600px; height: 140px; background: #1e293b; border: 2px solid #ff4d4d; border-radius:10px; overflow: hidden; position: relative; box-shadow: 0 0 30px rgba(255,77,77,0.3);">
-        <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #fff; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 10px #fff;"></div>
-        <div id="rouletteContainer" style="display: flex; height: 100%; width: max-content; transition: transform 5s cubic-bezier(0.1, 0, 0.1, 1);"></div>
-    </div>
-    <div id="rouletteResult" style="display:none; margin-top:20px; text-align:center;">
-        <h3 id="rouletteItemName" style="color:#fff; margin-bottom:15px; font-size:18px;"></h3>
-        <button class="btn" id="rouletteOkBtn" style="padding: 12px 50px; font-size:18px;">ОК</button>
-    </div>
-</div>
-
-<div id="equipModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85); z-index:1005; flex-direction:column; align-items:center; justify-content:center;">
-    <div class="card" style="position:relative; width:90%; max-width:350px;">
-        <button class="btn btn-danger" style="position:absolute; top:10px; right:10px; padding:5px 12px;" onclick="document.getElementById('equipModal').style.display='none'">X</button>
-        <div id="equipModalBody" style="margin-top: 20px;"></div>
-    </div>
-</div>
-
-<div id="clothesModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85); z-index:1005; flex-direction:column; align-items:center; justify-content:center;">
-    <div class="card" style="position:relative; width:90%; max-width:350px; text-align:center;">
-        <button class="btn btn-danger" style="position:absolute; top:10px; right:10px; padding:5px 12px;" onclick="document.getElementById('clothesModal').style.display='none'">X</button>
-        <h3 style="color:#ff4d4d; margin-bottom:15px;">ОДЕЖДА</h3>
-        <button class="btn" style="width:100%; margin-bottom:10px;" onclick="equipClothing(1)">Черная рубашка с галстуком</button>
-        <button class="btn" style="width:100%; margin-bottom:10px; background:#e2e8f0; color:#000;" onclick="equipClothing(2)">Белая футболка "Я eblan"</button>
-        <button class="btn" style="width:100%; background:linear-gradient(135deg,#a855f7,#7c3aed);" onclick="document.getElementById('costumeUpload').click()">📁 Загрузить свой костюм</button>
-        <input type="file" id="costumeUpload" accept="image/*" style="display:none">
-    </div>
-</div>
-
-<div id="inspectModal">
-    <h2 style="color:#ff4d4d; position:absolute; top:30px; z-index:1002;" id="inspectTitle">Осмотр оружия</h2>
-    <p style="color:#aaa; position:absolute; top:70px; z-index:1002; font-size:12px;">Крути пальцем</p>
-    <canvas id="inspectCanvas"></canvas>
-    <button class="btn btn-danger" style="position:absolute; bottom:40px; z-index:1002; padding:15px 40px;" onclick="closeInspect()">ЗАКРЫТЬ</button>
-</div>
-
-<div id="craftModal" class="craft-modal">
-    <div class="craft-window">
-        <h3 style="color:#ff4d4d; text-align:center;">КРАФТ СКИНОВ</h3>
-        <div class="craft-slots">
-            <div class="craft-slot empty" id="craftSlot1">?</div>
-            <div class="craft-slot empty" id="craftSlot2">?</div>
-            <div class="craft-slot empty" id="craftSlot3">?</div>
-            <div class="craft-result empty" id="craftResult">?</div>
-        </div>
-        <button class="btn" style="width:100%; margin-top:10px;" id="doCraftBtn">СКРАФТИТЬ</button>
-        <button class="btn btn-danger" style="width:100%; margin-top:10px;" id="closeCraftBtn">ЗАКРЫТЬ</button>
+    <div id="rouletteResult" style="display:none; margin-top:20px;">
+        <h3 id="rouletteItemName"></h3>
+        <button class="btn" id="rouletteOkBtn">ОК</button>
     </div>
 </div>
 
 <script>
-    // ========== GUN ИНИЦИАЛИЗАЦИЯ ==========
+    // ========== GUN ==========
     const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun', 'https://peer.wallie.io/gun']);
     
-    // ========== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ==========
+    // ========== ИГРОВЫЕ ДАННЫЕ ==========
     let game = {
         id: null, nick: "Игрок", gold: 1000, mmr: 0, wins: 0,
-        skins: [], friends: [], friendRequests: [], usedPromos: [],
-        lastMegaClick: 0, equippedGlove: null, equippedClothing: null,
+        skins: [], usedPromos: [], lastMegaClick: 0,
         weapons: {
             ak47: { name: "AK-47", active: true, skin: null },
             awp: { name: "AWP", active: false, skin: null },
-            m4a4: { name: "M4A4", active: false, skin: null },
-            deagle: { name: "Desert Eagle", active: false, skin: null },
-            glock: { name: "Glock-18", active: false, skin: null },
-            usp: { name: "USP-S", active: false, skin: null }
-        },
-        bpLevel: 0, bpClaimedRewards: [],
-        pendingPotions: [], ownedPotions: [], activePotions: []
+            m4a4: { name: "M4A4", active: false, skin: null }
+        }
     };
     
-    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+    // ========== ВСТРОЕННЫЕ ПРОМОКОДЫ (ДОБАВЛЯЙ СЮДА) ==========
+    const BUILTIN_PROMOS = {
+        "FIX_GAME" { gold: 1200, skin: "Перчатки (Красные)", desc: "фикс игры" },
+    };
+    
+    // ========== ФУНКЦИИ ==========
     function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
     
     function showToast(msg) {
         const t = document.createElement('div');
         t.textContent = msg;
-        t.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#ff4d4d;color:#fff;font-weight:bold;padding:10px 20px;border-radius:30px;font-size:13px;z-index:9999;animation:fadeOut 2s ease;white-space:nowrap;text-align:center;box-shadow:0 0 10px rgba(255,77,77,0.5);`;
+        t.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#ff4d4d;color:#fff;font-weight:bold;padding:12px 24px;border-radius:30px;z-index:9999;animation:fadeOut 2s ease;`;
         document.body.appendChild(t);
-        setTimeout(() => t.remove(), 2500);
+        setTimeout(() => t.remove(), 2000);
     }
     
-    function getSkinRarity(skinName) {
-        if (!skinName || typeof skinName !== 'string') return "common";
-        if (skinName.includes("Синие")) return "rare";
-        if (skinName.includes("Красные")) return "arcane";
-        if (skinName.includes("Оранжевые")) return "legendary";
-        if (skinName.includes("Karambit") || skinName.includes("Butterfly") || skinName.includes("M9") || skinName.includes("Kunai")) return "arcane";
-        const commonSkins = ["G22 Frost", "MP5 Swarm", "SSG 08 Abyss", "FAMAS Roller", "USP-S Genesis", "Glock-18 Death Rattle", "Перчатки (Синие)"];
-        const rareSkins = ["AKM Tiger", "Desert Eagle Cobra", "M4A4 Griffin", "Glock-18 Water Elemental", "USP-S Cortex", "Перчатки (Красные)"];
-        const legendarySkins = ["AWP Dragon Lore", "Karambit Gold", "M9 Bayonet Bloodweb", "Butterfly Fade", "Kunai Poison", "Перчатки (Оранжевые)"];
-        if (commonSkins.includes(skinName)) return "common";
-        if (rareSkins.includes(skinName)) return "epic";
-        if (legendarySkins.includes(skinName)) return "legendary";
-        if (skinName === "AWP Dragon Lore") return "arcane";
-        if (skinName === "Golden Dragon AWP") return "mythic";
+    function getSkinRarity(name) {
+        if (name.includes("Перчатки")) return "rare";
+        if (name.includes("Dragon Lore") || name.includes("Karambit") || name.includes("Bayonet")) return "arcane";
         return "common";
     }
     
     function getRankName() {
-        if (game.mmr < 50) return "20 это новичок 💩💩💩";
-        if (game.mmr < 100) return "50 новичок №2 💩💩";
-        if (game.mmr < 150) return "100 новичок №3 💩";
-        if (game.mmr < 167) return "150 обычный 😐";
-        if (game.mmr < 200) return "167 Сиксевен!! 67";
-        if (game.mmr < 252) return "200 обычный №3 🙂";
-        if (game.mmr < 300) return "252 Норм 😉";
-        if (game.mmr < 400) return "300 тракторист 🚜🚜";
-        if (game.mmr < 510) return "400 Пацан 🤫👈";
-        if (game.mmr < 650) return "510 Мухамед 🤨";
-        if (game.mmr < 805) return "650 Отличный 😁";
-        if (game.mmr < 1300) return "805 Мужик! 😒";
-        if (game.mmr < 2000) return "1300 Мужик! №2 🥉";
-        if (game.mmr < 3400) return "2000 Имбирь! 🥇";
-        if (game.mmr < 5000) return "3400 Легенда 🏅";
-        return "5000 Кристал 🪩";
+        if (game.mmr < 100) return "Новичок";
+        if (game.mmr < 300) return "Боец";
+        if (game.mmr < 600) return "Ветеран";
+        if (game.mmr < 1000) return "Элита";
+        return "Легенда";
     }
     
-    function getAutoClickGain() {
+    function getAutoGain() {
         const weapon = Object.values(game.weapons).find(w => w.active);
         if (!weapon || !weapon.skin) return 0;
         const r = weapon.skin.rarity;
         if (r === 'common') return 1;
         if (r === 'rare') return 2;
-        if (r === 'epic') return 3;
-        if (r === 'legendary') return 7;
+        if (r === 'epic') return 4;
+        if (r === 'legendary') return 8;
         if (r === 'arcane') return 15;
-        if (r === 'mythic') return 30;
         return 0;
-    }
-    
-    function getClickGain() {
-        const base = 2;
-        let bonus = 0;
-        const weapon = Object.values(game.weapons).find(w => w.active);
-        if (weapon && weapon.skin) {
-            const skinBonuses = { "common": 2, "rare": 3, "epic": 4, "legendary": 7, "arcane": 12, "mythic": 20 };
-            bonus = skinBonuses[weapon.skin.rarity] || 0;
-        }
-        let gain = base + Math.floor(base * bonus / 100);
-        if (game.activePotions && game.activePotions.some(p => p.ptype === 'green' && Date.now() < p.endsAt)) gain += 5;
-        return gain;
     }
     
     function saveGame() {
         if (!game.id) return;
-        localStorage.setItem('sc14_game_' + game.id, JSON.stringify(game));
-        localStorage.setItem('sc14_lastId', game.id);
-        gun.get('p_' + game.id).put({
-            id: game.id, nick: game.nick, gold: game.gold, mmr: game.mmr, wins: game.wins,
-            lastSeen: Date.now(), skins: game.skins, weapons: game.weapons, bpLevel: game.bpLevel
-        });
+        localStorage.setItem('sc_game_' + game.id, JSON.stringify(game));
+        localStorage.setItem('sc_last_id', game.id);
+        gun.get('p_' + game.id).put({ id: game.id, nick: game.nick, gold: game.gold, mmr: game.mmr, wins: game.wins, lastSeen: Date.now() });
     }
     
     function loadGame() {
-        const savedId = localStorage.getItem('sc14_lastId');
+        const savedId = localStorage.getItem('sc_last_id');
         if (savedId) {
-            const raw = localStorage.getItem('sc14_game_' + savedId);
+            const raw = localStorage.getItem('sc_game_' + savedId);
             if (raw) {
                 try {
                     const d = JSON.parse(raw);
@@ -597,138 +242,304 @@
                     game.mmr = d.mmr ?? 0;
                     game.wins = d.wins ?? 0;
                     game.skins = d.skins || [];
-                    game.friends = d.friends || [];
-                    game.friendRequests = d.friendRequests || [];
                     game.usedPromos = d.usedPromos || [];
                     game.lastMegaClick = d.lastMegaClick || 0;
-                    game.equippedClothing = d.equippedClothing || null;
-                    game.equippedGlove = d.equippedGlove || null;
                     if (d.weapons) Object.assign(game.weapons, d.weapons);
-                    game.bpLevel = d.bpLevel || 0;
-                    game.bpClaimedRewards = d.bpClaimedRewards || [];
-                    game.pendingPotions = d.pendingPotions || [];
-                    game.ownedPotions = d.ownedPotions || [];
-                    game.activePotions = d.activePotions || [];
-                } catch(e) { console.error(e); }
+                } catch(e) {}
             }
         }
         if (!game.id) { game.id = generateId(); saveGame(); }
+        
+        if (game.skins.length === 0) {
+            game.skins.push({ name: "Перчатки (Синие)", rarity: "rare" });
+            saveGame();
+        }
+        
         updateUI();
+        updateMegaTimer();
+        renderPromos();
     }
     
     function updateUI() {
-        document.getElementById('gold').innerHTML = `<svg viewBox="0 0 24 24" width="36" height="36" fill="#ffd700"><circle cx="12" cy="12" r="10"/><text x="12" y="16" font-size="12" text-anchor="middle" fill="#000" font-weight="bold">G</text></svg> ${Math.floor(game.gold)} G`;
+        document.getElementById('gold').innerHTML = `💰 ${Math.floor(game.gold)} G`;
         document.getElementById('nick').innerText = game.nick;
-        document.getElementById('rank').innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24" style="fill:#94a3b8;"><path d="M19 3h-2V1h-2v2H9V1H7v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10z"/></svg> ${getRankName()}`;
-        document.getElementById('wins').innerText = game.wins;
-        document.getElementById('mmr').innerText = game.mmr;
+        document.getElementById('rank').innerHTML = `🏅 ${getRankName()} (${game.mmr} MMR)`;
         if (game.id) document.getElementById('playerIdDisplay').innerText = game.id;
-        document.getElementById('skinBonusDisplay').innerHTML = `Авто: ${getAutoClickGain()} G/сек`;
+        document.getElementById('autoBonus').innerHTML = `Авто: ${getAutoGain()} G/сек`;
         
-        const skinsList = document.getElementById('skinsList');
-        if (skinsList) {
-            skinsList.innerHTML = game.skins.map((s, i) => `<div class="item-card" onclick="selectSkinForWeapon(${i})"><div style="font-size:28px;">🎨</div><div style="font-size:12px; margin-top:5px; font-weight:bold;">${s.name}</div><div style="font-size:10px; color:#aaa;">${s.rarity}</div></div>`).join('');
+        const skinsDiv = document.getElementById('skinsList');
+        if (skinsDiv) {
+            skinsDiv.innerHTML = game.skins.map((s, i) => `
+                <div class="item-card" onclick="equipSkin(${i})">
+                    <div style="font-size:28px;">${s.name.includes("Перчатки") ? "🧤" : "🔫"}</div>
+                    <div>${s.name}</div>
+                    <div style="font-size:10px;">${s.rarity}</div>
+                </div>
+            `).join('');
+        }
+        
+        renderWeapons();
+    }
+    
+    function renderWeapons() {
+        const div = document.getElementById('weaponsList');
+        if (div) {
+            div.innerHTML = Object.entries(game.weapons).map(([id, w]) => `
+                <div style="background:#1e293b; border-radius:12px; padding:10px; margin:5px 0;">
+                    <b>${w.name}</b> ${w.active ? '✅' : ''}
+                    <div style="font-size:12px;">Скин: ${w.skin ? w.skin.name : 'нет'}</div>
+                    ${!w.active ? `<button class="btn" style="padding:4px 12px; margin-top:5px;" onclick="equipWeapon('${id}')">Надеть</button>` : ''}
+                </div>
+            `).join('');
         }
     }
     
-    // ========== ПРОМОКОДЫ С ПРОВЕРКОЙ В GUN ==========
-    document.getElementById('activatePromoBtn').onclick = () => {
-        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
-        if (!code) { showToast("Введите промокод!"); return; }
+    function equipWeapon(weaponId) {
+        for (let id in game.weapons) game.weapons[id].active = (id === weaponId);
+        saveGame();
+        updateUI();
+        showToast(`🔫 ${game.weapons[weaponId].name} экипирован`);
+    }
+    
+    function equipSkin(index) {
+        const skin = game.skins[index];
+        if (!skin) return;
         
-        gun.get('promocodes').get(code).once((promoData) => {
-            if (!promoData || !promoData.gold) {
-                const hardcoded = { "EZGOLDA": 150, "IMBARAZRAB": 300, "STANDCLICKERS": 52, "SKEBEDE?": 300, "VENOM01": 150 };
-                if (hardcoded[code]) {
-                    if (game.usedPromos && game.usedPromos.includes(code)) { showToast("Код уже использован!"); return; }
-                    game.gold += hardcoded[code];
-                    if (!game.usedPromos) game.usedPromos = [];
-                    game.usedPromos.push(code);
-                    saveGame(); updateUI();
-                    showToast(`Активировано! +${hardcoded[code]} G!`);
-                    document.getElementById('promoCodeInput').value = '';
-                    return;
-                }
-                showToast("Неверный промокод!");
-                return;
+        if (skin.name.includes("Перчатки")) {
+            showToast(`🧤 ${skin.name} надеты!`);
+        } else {
+            const active = Object.entries(game.weapons).find(([,w]) => w.active);
+            if (active) {
+                game.weapons[active[0]].skin = skin;
+                saveGame();
+                updateUI();
+                showToast(`🎨 ${skin.name} надет на ${active[1].name}`);
             }
-            
-            if (game.usedPromos && game.usedPromos.includes(code)) { showToast("Вы уже использовали этот промокод!"); return; }
-            if (promoData.usesLeft <= 0) { showToast("Промокод больше недействителен!"); return; }
-            
-            if (promoData.gold) {
-                game.gold += promoData.gold;
-                showToast(`✅ +${promoData.gold} G за промокод!`);
+        }
+    }
+    
+    // ========== ВСТРОЕННЫЕ ПРОМОКОДЫ (ГЛАВНАЯ ФИЧА) ==========
+    function renderPromos() {
+        const container = document.getElementById('promoContainer');
+        if (!container) return;
+        
+        const availablePromos = [];
+        for (const [code, data] of Object.entries(BUILTIN_PROMOS)) {
+            if (!game.usedPromos.includes(code)) {
+                availablePromos.push({ code, ...data });
             }
-            if (promoData.skin) {
-                game.skins.push({ name: promoData.skin, rarity: getSkinRarity(promoData.skin) });
-                showToast(`🎁 Получен скин: ${promoData.skin}!`);
-            }
-            
-            if (!game.usedPromos) game.usedPromos = [];
-            game.usedPromos.push(code);
-            
-            gun.get('promocodes').get(code).put({
-                gold: promoData.gold,
-                usesLeft: promoData.usesLeft - 1,
-                skin: promoData.skin,
-                createdBy: promoData.createdBy,
-                createdAt: promoData.createdAt
-            });
-            
-            saveGame(); updateUI();
-            document.getElementById('promoCodeInput').value = '';
-        });
+        }
+        
+        if (availablePromos.length === 0) {
+            container.innerHTML = '<div style="background:#1e293b; border-radius:16px; padding:12px; text-align:center;">✅ Все промокоды активированы!</div>';
+            return;
+        }
+        
+        container.innerHTML = availablePromos.map(p => `
+            <div class="promo-banner">
+                <span>🎁 ${p.desc}</span>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span style="font-size:14px;">+${p.gold} G${p.skin ? ` + ${p.skin}` : ''}</span>
+                    <button onclick="claimPromo('${p.code}')">ЗАБРАТЬ</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    window.claimPromo = function(code) {
+        if (game.usedPromos.includes(code)) {
+            showToast("Промокод уже активирован!");
+            return;
+        }
+        
+        const promo = BUILTIN_PROMOS[code];
+        if (!promo) return;
+        
+        // Выдача награды
+        game.gold += promo.gold;
+        if (promo.skin) {
+            game.skins.push({ name: promo.skin, rarity: getSkinRarity(promo.skin) });
+            showToast(`🎁 Получен скин: ${promo.skin}!`);
+        }
+        game.usedPromos.push(code);
+        saveGame();
+        updateUI();
+        renderPromos();
+        showToast(`✅ +${promo.gold} G!`);
+        
+        // Эффект вспышки
+        document.body.classList.add('mega-flash');
+        setTimeout(() => document.body.classList.remove('mega-flash'), 700);
     };
     
-    // ========== ЗАПУСК ИГРЫ ==========
+    // ========== КЛИКЕР ==========
+    document.getElementById('clickBtn').onclick = () => {
+        game.gold += 2;
+        saveGame();
+        updateUI();
+    };
+    
+    function updateMegaTimer() {
+        const cooldown = 5 * 60 * 60 * 1000;
+        const passed = Date.now() - (game.lastMegaClick || 0);
+        const btn = document.getElementById('megaClickBtn');
+        const timer = document.getElementById('megaTimer');
+        if (passed >= cooldown) {
+            btn.disabled = false;
+            timer.innerText = "ГОТОВО";
+        } else {
+            btn.disabled = true;
+            const left = cooldown - passed;
+            const h = Math.floor(left / 3600000);
+            const m = Math.floor((left % 3600000) / 60000);
+            const s = Math.floor((left % 60000) / 1000);
+            timer.innerText = `${h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+        }
+    }
+    setInterval(updateMegaTimer, 1000);
+    
+    document.getElementById('megaClickBtn').onclick = () => {
+        if (Date.now() - (game.lastMegaClick || 0) >= 5 * 60 * 60 * 1000) {
+            game.gold += 1000;
+            game.lastMegaClick = Date.now();
+            saveGame();
+            updateUI();
+            updateMegaTimer();
+            document.body.classList.add('mega-flash');
+            setTimeout(() => document.body.classList.remove('mega-flash'), 700);
+        }
+    };
+    
+    // ========== КЕЙСЫ ==========
+    const caseItems = {
+        common: ["G22 Frost", "MP5 Swarm", "Перчатки (Синие)"],
+        rare: ["AKM Tiger", "Desert Eagle Cobra", "Перчатки (Красные)"],
+        legendary: ["AWP Dragon Lore", "Karambit Gold", "Перчатки (Оранжевые)"]
+    };
+    
+    function openCase(price, items, name) {
+        if (game.gold < price) { showToast(`Нужно ${price} G!`); return; }
+        game.gold -= price;
+        saveGame();
+        updateUI();
+        
+        const winIndex = 40;
+        const allItems = [...caseItems.common, ...caseItems.rare, ...caseItems.legendary];
+        let spin = [];
+        for (let i = 0; i < 50; i++) {
+            spin.push(i === winIndex ? items[Math.floor(Math.random() * items.length)] : allItems[Math.floor(Math.random() * allItems.length)]);
+        }
+        const win = spin[winIndex];
+        
+        const container = document.getElementById('rouletteContainer');
+        container.innerHTML = spin.map(s => `<div style="width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-size:36px;">${s.includes("Перчатки")?"🧤":"🔫"}</div><div style="font-size:10px;">${s}</div></div>`).join('');
+        
+        const modal = document.getElementById('rouletteModal');
+        modal.style.display = 'flex';
+        setTimeout(() => container.style.transform = `translateX(${-(winIndex * 120 + 100)}px)`, 50);
+        
+        setTimeout(() => {
+            document.getElementById('rouletteItemName').innerHTML = `🎉 ${win} 🎉`;
+            document.getElementById('rouletteResult').style.display = 'block';
+            document.getElementById('rouletteOkBtn').onclick = () => {
+                game.skins.push({ name: win, rarity: getSkinRarity(win) });
+                saveGame();
+                updateUI();
+                modal.style.display = 'none';
+                document.getElementById('rouletteResult').style.display = 'none';
+            };
+        }, 5100);
+    }
+    
+    document.getElementById('openCommonCase').onclick = () => openCase(500, caseItems.common, "Обычный");
+    document.getElementById('openRareCase').onclick = () => openCase(1500, caseItems.rare, "Редкий");
+    document.getElementById('openLegendaryCase').onclick = () => openCase(5000, caseItems.legendary, "Легендарный");
+    
+    // ========== ОСТАЛЬНОЕ ==========
+    function copyPlayerId() { if (game.id) navigator.clipboard.writeText(game.id); showToast("ID скопирован!"); }
+    
+    document.getElementById('changeNickBtn').onclick = () => {
+        const newNick = prompt("Новый ник:", game.nick);
+        if (newNick?.trim()) { game.nick = newNick.trim().substring(0, 20); saveGame(); updateUI(); showToast(`Ник изменён`); }
+    };
+    
+    document.getElementById('resetBtn').onclick = () => {
+        if (confirm("Сбросить прогресс?")) { localStorage.clear(); location.reload(); }
+    };
+    
+    // Навигация
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${btn.dataset.page}`).classList.add('active');
+            if (btn.dataset.page === 'stats') {
+                document.getElementById('statsContent').innerHTML = `
+                    <div>💰 Голда: ${Math.floor(game.gold)} G</div>
+                    <div>📊 MMR: ${game.mmr}</div>
+                    <div>🏆 Побед: ${game.wins}</div>
+                    <div>🎒 Скинов: ${game.skins.length}</div>
+                    <div>🎫 Промокодов: ${game.usedPromos.length}/${Object.keys(BUILTIN_PROMOS).length}</div>
+                `;
+            }
+        };
+    });
+    
+    // Автоклик
+    setInterval(() => {
+        const auto = getAutoGain();
+        if (auto > 0) { game.gold += auto; saveGame(); updateUI(); }
+    }, 1000);
+    
+    // 3D (упрощённо)
+    let scene, camera, renderer;
+    function init3D() {
+        const canvas = document.getElementById('heroCanvas');
+        if (!canvas) return;
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(w, h);
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
+        camera.position.set(0, 1.5, 5);
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 5);
+        scene.add(light);
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.5, 1.2, 32), new THREE.MeshStandardMaterial({ color: 0xcccccc }));
+        body.position.y = 0;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffccaa }));
+        head.position.y = 1.2;
+        scene.add(body);
+        scene.add(head);
+        function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+        animate();
+    }
+    
+    // Запуск
     function startApp() {
-        const intro = document.getElementById('introContent');
-        intro.classList.add('evaporating');
-        let bgm = document.getElementById('bgMusic');
-        if (bgm) { bgm.volume = 0.9; bgm.play().catch(e => console.log("Музыка не запустилась")); }
+        document.getElementById('introScreen').querySelector('div').classList.add('evaporating');
         setTimeout(() => {
             document.getElementById('introScreen').style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
-        }, 1200);
+            init3D();
+        }, 1000);
     }
     
-    // Подписка на техработы
-    gun.get('server_maintenance').on((data) => {
-        document.getElementById('maintenanceScreen').style.display = data && data.active ? 'flex' : 'none';
+    gun.get('server_maintenance').on(data => {
+        document.getElementById('maintenanceScreen').style.display = data?.active ? 'flex' : 'none';
     });
     
-    // Подписка на рассылку
-    gun.get('broadcast').on((data) => {
-        if (data && data.message) showToast(`📢 ${data.message}`);
-    });
-    
-    // Загрузка игры
     loadGame();
+    window.startApp = startApp;
+    window.equipWeapon = equipWeapon;
+    window.equipSkin = equipSkin;
+    window.copyPlayerId = copyPlayerId;
     
-    // ========== ЗАГОЛУШКИ ДЛЯ ОСТАЛЬНЫХ ФУНКЦИЙ (чтобы не было ошибок) ==========
-    window.selectSkinForWeapon = function(i) { showToast("Выбери скин в инвентаре"); };
-    window.copyPlayerId = function() { if(game.id) navigator.clipboard.writeText(game.id); showToast("ID скопирован!"); };
-    window.equipClothing = function(id) { game.equippedClothing = id; saveGame(); showToast("Костюм надет!"); document.getElementById('clothesModal').style.display='none'; };
-    window.closeInspect = function() { document.getElementById('inspectModal').style.display = 'none'; };
-    
-    document.getElementById('changeNickBtn').onclick = () => {
-        const newNick = prompt("Введите новый ник:", game.nick);
-        if (newNick && newNick.trim()) { game.nick = newNick.trim().substring(0, 20); saveGame(); updateUI(); showToast(`Ник изменён`); }
-    };
-    document.getElementById('resetBtn').onclick = () => {
-        if (confirm("Сбросить весь прогресс?")) { localStorage.clear(); location.reload(); }
-    };
-    
-    // Простые обработчики для кнопок (чтобы не было ошибок)
-    document.getElementById('clickBtn').onclick = () => { const gain = getClickGain(); game.gold += gain; saveGame(); updateUI(); };
-    document.getElementById('megaClickBtn').onclick = () => { if (Date.now() - (game.lastMegaClick||0) >= 5*60*60*1000) { game.gold += 1000; game.lastMegaClick = Date.now(); saveGame(); updateUI(); } };
-    document.getElementById('openCommonCase').onclick = () => showToast("Кейсы временно не работают");
-    document.getElementById('openRareCase').onclick = () => showToast("Кейсы временно не работают");
-    document.getElementById('openLegendaryCase').onclick = () => showToast("Кейсы временно не работают");
-    document.getElementById('sendFriendRequestBtn').onclick = () => showToast("Система друзей в разработке");
-    
-    console.log("Игра загружена! Промокоды работают через Gun!");
+    // Стиль для анимации
+    const style = document.createElement('style');
+    style.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }`;
+    document.head.appendChild(style);
 </script>
 </body>
-            </html>
+        </html>
