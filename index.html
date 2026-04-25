@@ -3,23 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>StandClick 2.0 — Кейс симулятор</title>
+    <title>StandClick 2.0 — Blood Update</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         button { cursor: pointer; outline: none; }
         
-        body { background: linear-gradient(135deg, #0a0a1a, #1a0a2e); font-family: 'Segoe UI', sans-serif; color: white; min-height: 100vh; }
+        body { 
+            background: linear-gradient(135deg, #0a0a1a, #1a0a2e); 
+            font-family: 'Segoe UI', 'Poppins', sans-serif; 
+            color: white; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
         
-        @keyframes flashScreen { 0% { box-shadow: inset 0 0 0 0 transparent; } 10% { box-shadow: inset 0 0 100px 30px rgba(225,29,72,0.5); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+        /* ========== ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН ========== */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #0a0a2a 0%, #050510 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
+        }
+        
+        .loading-logo {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: floatLogo 2s ease-in-out infinite;
+        }
+        
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .loading-logo h1 {
+            font-size: 64px;
+            background: linear-gradient(135deg, #ff4d4d, #ffd700, #ff4d4d);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradientShift 3s ease infinite;
+            letter-spacing: 5px;
+            text-shadow: 0 0 50px rgba(255,77,77,0.5);
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .loading-sub {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 3px;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        
+        /* Прогресс-бар */
+        .loading-bar-container {
+            width: 280px;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 30px auto;
+            box-shadow: 0 0 10px rgba(255,77,77,0.3);
+        }
+        
+        .loading-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff4d4d, #ffd700);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 15px #ff4d4d;
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .loading-tips {
+            position: absolute;
+            bottom: 40px;
+            text-align: center;
+            width: 100%;
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            animation: fadeInOut 3s infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        /* Парящие частицы на загрузке */
+        .loading-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(255,77,77,0.6);
+            border-radius: 50%;
+            animation: particleFloat linear infinite;
+        }
+        
+        @keyframes particleFloat {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes flashScreen { 
+            0% { box-shadow: inset 0 0 0 0 transparent; } 
+            10% { box-shadow: inset 0 0 100px 30px rgba(225,29,72,0.5); } 
+            100% { box-shadow: inset 0 0 0 0 transparent; } 
+        }
         body.mega-flash { animation: flashScreen 0.7s ease-out; }
-
-        #introScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a1a; z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .intro-title { font-size: 48px; color: #ff4d4d; text-shadow: 0 0 20px #ff4d4d; margin-bottom: 40px; }
-        .intro-btn { padding: 15px 40px; font-size: 18px; background: linear-gradient(135deg, #ff4d4d, #cc0000); border: none; border-radius: 30px; color: white; cursor: pointer; }
-        @keyframes evaporate { 0% { opacity: 1; } 100% { opacity: 0; transform: translateY(-50px); filter: blur(10px); } }
-        .evaporating { animation: evaporate 1s forwards; }
 
         #maintenanceScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 9998; align-items: center; justify-content: center; flex-direction: column; }
         
@@ -54,24 +182,19 @@
         .id-box { background: rgba(0,0,0,0.4); border-radius: 14px; padding: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #ff4d4d; margin-top: 10px; }
         #playerIdDisplay { font-size: 12px; color: #ff4d4d; font-family: monospace; }
         
-        /* ПРОМО-БАННЕРЫ */
         .promo-banner { background: linear-gradient(135deg, #f59e0b, #ef4444); border-radius: 16px; padding: 15px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; animation: promoGlow 2s infinite; cursor: pointer; transition: 0.2s; }
         .promo-banner:hover { transform: scale(1.02); }
         @keyframes promoGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); } 50% { box-shadow: 0 0 0 10px rgba(245,158,11,0); } }
         .promo-banner button { background: white; color: #ef4444; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         
-        /* КЕЙСЫ */
         .cases-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
         .case-card { flex: 1; min-width: 250px; background: #1e293b; border-radius: 20px; padding: 20px; text-align: center; transition: 0.2s; cursor: pointer; border: 1px solid rgba(255,77,77,0.3); }
-        .case-card:hover { transform: translateY(-5px); border-color: #ff4d4d; box-shadow: 0 10px 25px rgba(255,77,77,0.2); }
-        .case-icon { font-size: 48px; margin-bottom: 10px; }
+        .case-card:hover { transform: translateY(-5px); border-color: #ff4d4d; }
         .case-price { color: #ffd700; font-weight: bold; font-size: 20px; margin: 10px 0; }
         
-        /* ТАБЛИЦА ШАНСОВ */
         .chances-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
         .chances-table th, .chances-table td { padding: 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .chances-table th { color: #ffd700; }
-        .chances-table tr:hover { background: rgba(255,77,77,0.1); }
         .rarity-badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: bold; }
         .rarity-common { background: #3b82f6; }
         .rarity-rare { background: #a855f7; }
@@ -79,26 +202,31 @@
         .rarity-legendary { background: #f97316; }
         .rarity-arcane { background: #ef4444; }
         
-        /* 3D ПРЕВЬЮ */
         .preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; }
         .preview-canvas { width: 90%; max-width: 500px; height: 400px; background: #0a0a1a; border-radius: 20px; border: 2px solid #ff4d4d; }
-        .preview-title { margin-bottom: 15px; font-size: 24px; color: #ffd700; }
         
         .weapon-card { background: #1e293b; border-radius: 12px; padding: 10px; margin: 5px 0; border-left: 3px solid #ff4d4d; }
         
         @media (max-width: 600px) {
-            .intro-title { font-size: 36px; }
             .click-btn { width: 120px; height: 120px; font-size: 16px; }
             .gold { font-size: 32px; }
-            .cases-grid { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-<div id="introScreen">
-    <h1 class="intro-title">STANDCLICK 2.0</h1>
-    <button class="intro-btn" onclick="startApp()">ВОЙТИ</button>
+<!-- ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН -->
+<div class="loading-screen" id="loadingScreen">
+    <div class="loading-particles" id="loadingParticles"></div>
+    <div class="loading-logo">
+        <h1>STANDCLICK</h1>
+        <div class="loading-sub">BLOOD UPDATE</div>
+    </div>
+    <div class="loading-bar-container">
+        <div class="loading-bar" id="loadingBar"></div>
+    </div>
+    <div class="loading-text" id="loadingText">ЗАГРУЗКА... 0%</div>
+    <div class="loading-tips" id="loadingTip">💡 Открывай кейсы и получай легендарные скины!</div>
 </div>
 
 <div id="maintenanceScreen">
@@ -114,7 +242,6 @@
         <button class="nav-btn" data-page="stats">📊 Статы</button>
     </div>
 
-    <!-- ГЛАВНАЯ -->
     <div id="page-main" class="page active">
         <div style="background: #1a1a2e; border-radius: 20px; padding: 20px; margin-bottom: 20px;">
             <div class="nick" id="nick" style="font-size: 24px;">Игрок</div>
@@ -146,7 +273,6 @@
         </div>
     </div>
 
-    <!-- ИНВЕНТАРЬ -->
     <div id="page-inventory" class="page">
         <div class="card">
             <h3>🎒 ИНВЕНТАРЬ</h3>
@@ -157,18 +283,14 @@
         </div>
     </div>
 
-    <!-- КЕЙСЫ (с таблицей шансов и превью) -->
     <div id="page-cases" class="page">
         <div class="cases-grid" id="casesGrid"></div>
-        
-        <!-- ТАБЛИЦА ШАНСОВ -->
         <div class="card" style="margin-top: 20px;">
             <h3>📊 ШАНСЫ ВЫПАДЕНИЯ</h3>
             <table class="chances-table" id="chancesTable"></table>
         </div>
     </div>
 
-    <!-- СТАТИСТИКА -->
     <div id="page-stats" class="page">
         <div class="card">
             <h3>📊 СТАТИСТИКА</h3>
@@ -177,14 +299,12 @@
     </div>
 </div>
 
-<!-- МОДАЛКА ПРЕВЬЮ -->
 <div id="previewModal" class="preview-modal">
-    <h2 class="preview-title" id="previewTitle">Осмотр</h2>
+    <h2 class="preview-title" id="previewTitle" style="color:#ffd700;">Осмотр</h2>
     <canvas id="previewCanvas" class="preview-canvas"></canvas>
     <button class="btn" style="margin-top: 20px;" onclick="closePreview()">ЗАКРЫТЬ</button>
 </div>
 
-<!-- РУЛЕТКА -->
 <div id="rouletteModal" style="display:none; position:fixed; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; flex-direction:column;">
     <h2 style="color:#ff4d4d;">Открытие кейса</h2>
     <div style="width:90%; max-width:600px; height:120px; background:#1e293b; border:2px solid #ff4d4d; border-radius:10px; overflow:hidden;">
@@ -199,7 +319,6 @@
 <script>
     const gun = Gun(['https://gun-vue.yogg.app/gun', 'https://dletta.pub/gun', 'https://peer.wallie.io/gun']);
     
-    // ИГРОВЫЕ ДАННЫЕ
     let game = {
         id: null, nick: "Игрок", gold: 1000, mmr: 0, wins: 0,
         skins: [], usedPromos: [], lastMegaClick: 0,
@@ -210,70 +329,133 @@
         }
     };
     
-    // ВСТРОЕННЫЕ ПРОМОКОДЫ
     const BUILTIN_PROMOS = {
-        "WELCOME2026":   { gold: 500,  skin: null,              desc: "🔥 Приветственный бонус!" },
-        "BLOODUPDATE":   { gold: 1000, skin: null.              desc: "🩸 Blood Update!" },
+        "W_OR_L":   { gold: 500,  skin: null, desc: "🔥 Приветственный бонус!" },
     };
     
-    // ========== КЕЙСЫ С ШАНСАМИ ==========
+    const rarityColors = {
+        common: "#3b82f6", rare: "#a855f7", epic: "#ec4899",
+        legendary: "#f97316", arcane: "#ef4444", mythic: "#06b6d4"
+    };
+    
     const CASES = {
         common: {
-            name: "📦 Обычный кейс",
-            price: 500,
-            icon: "💼",
+            name: "📦 Обычный кейс", price: 500, icon: "📦",
             items: [
                 { name: "G22 Frost", rarity: "common", chance: 40 },
                 { name: "MP5 Swarm", rarity: "common", chance: 35 },
-                { name: "SPAS Abyss", rarity: "common", chance: 20 },
-                { name: "Перчатки (Синие)", rarity: "rare", chance: 0.1 }
+                { name: "SSG 08 Abyss", rarity: "common", chance: 20 },
+                { name: "Перчатки (Синие)", rarity: "rare", chance: 5 }
             ]
         },
         rare: {
-            name: "✨ Редкий кейс",
-            price: 1500,
-            icon: "✨",
+            name: "✨ Редкий кейс", price: 1500, icon: "✨",
             items: [
                 { name: "AKM Tiger", rarity: "rare", chance: 45 },
                 { name: "Desert Eagle Cobra", rarity: "rare", chance: 30 },
                 { name: "M4A4 Griffin", rarity: "epic", chance: 15 },
                 { name: "Перчатки (Красные)", rarity: "legendary", chance: 8 },
-                { name: "Karambit Gold", rarity: "arcane", chance: 1 }
+                { name: "Karambit Gold", rarity: "arcane", chance: 2 }
             ]
         },
         legendary: {
-            name: "🔥 Легендарный кейс",
-            price: 5000,
-            icon: "🔥",
+            name: "🔥 Легендарный кейс", price: 5000, icon: "🔥",
             items: [
                 { name: "AWP Dragon Lore", rarity: "legendary", chance: 40 },
                 { name: "M9 Bayonet", rarity: "legendary", chance: 25 },
                 { name: "Butterfly Fade", rarity: "arcane", chance: 15 },
                 { name: "Перчатки (Оранжевые)", rarity: "arcane", chance: 12 },
-                { name: "Karambit Ruby", rarity: "arcane", chance: 3 },
-                { name: "AWP Medusa", rarity: "mythic", chance: 0.5 }
+                { name: "Karambit Ruby", rarity: "arcane", chance: 5 },
+                { name: "AWP Medusa", rarity: "mythic", chance: 3 }
             ]
         }
     };
     
-    // РЕДКОСТИ ДЛЯ ЦВЕТОВ
-    const rarityColors = {
-        common: "#3b82f6",
-        rare: "#a855f7",
-        epic: "#ec4899",
-        legendary: "#f97316",
-        arcane: "#ef4444",
-        mythic: "#06b6d4"
-    };
+    // ========== ЗАГРУЗОЧНЫЙ ЭКРАН ==========
+    function createParticles() {
+        const container = document.getElementById('loadingParticles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 4 + 2;
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = Math.random() * 5 + 3 + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.opacity = Math.random() * 0.5 + 0.2;
+            container.appendChild(particle);
+        }
+    }
     
-    // ОТРИСОВКА КЕЙСОВ
+    const tips = [
+        "💡 Открывай кейсы и получай легендарные скины!",
+        "⚡ MEGA-клик даёт 1000 G раз в 5 часов!",
+        "🎨 Скины увеличивают авто-доход!",
+        "🔥 Легендарные скины выпадают с шансом 2-8%",
+        "💰 Кликай быстрее — зарабатывай больше!",
+        "🎁 Промокоды активируются на главном экране!"
+        "🤝 Поддерживай разработчиков игры!"
+        "📎 Нашёл баг? Сообщи в боте"
+    ];
+    
+    let currentTip = 0;
+    function rotateTips() {
+        const tipEl = document.getElementById('loadingTip');
+        if (tipEl) {
+            currentTip = (currentTip + 1) % tips.length;
+            tipEl.style.opacity = '0';
+            setTimeout(() => {
+                tipEl.textContent = tips[currentTip];
+                tipEl.style.opacity = '1';
+            }, 500);
+        }
+    }
+    setInterval(rotateTips, 4000);
+    
+    async function startLoading() {
+        createParticles();
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingText = document.getElementById('loadingText');
+        const steps = [
+            { progress: 10, text: "Инициализация ядра...", delay: 200 },
+            { progress: 25, text: "Загрузка базы данных Gun...", delay: 300 },
+            { progress: 40, text: "Подключение к серверу...", delay: 250 },
+            { progress: 55, text: "Загрузка профиля игрока...", delay: 200 },
+            { progress: 70, text: "Синхронизация инвентаря...", delay: 250 },
+            { progress: 85, text: "Загрузка кейсов и скинов...", delay: 200 },
+            { progress: 95, text: "Почти готово...", delay: 200 },
+            { progress: 100, text: "Вход в игру...", delay: 300 }
+        ];
+        
+        for (const step of steps) {
+            await new Promise(resolve => setTimeout(resolve, step.delay));
+            loadingBar.style.width = step.progress + '%';
+            loadingText.textContent = step.text + ' ' + step.progress + '%';
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        document.getElementById('loadingScreen').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            initGameUI();
+        }, 1000);
+    }
+    
+    function initGameUI() {
+        renderCases();
+        renderChances();
+        updateUI();
+        loadGameData();
+    }
+    
     function renderCases() {
         const grid = document.getElementById('casesGrid');
         if (!grid) return;
-        
         grid.innerHTML = Object.entries(CASES).map(([id, data]) => `
             <div class="case-card" onclick="openCaseType('${id}')">
-                <div class="case-icon">${data.icon}</div>
+                <div class="case-icon" style="font-size:48px;">${data.icon}</div>
                 <h3>${data.name}</h3>
                 <div class="case-price">💰 ${data.price} G</div>
                 <button class="btn" style="margin-top: 10px;">Открыть</button>
@@ -281,89 +463,50 @@
         `).join('');
     }
     
-    // ТАБЛИЦА ШАНСОВ
     function renderChances() {
         const table = document.getElementById('chancesTable');
         if (!table) return;
-        
-        let html = `<tr><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
-        
+        let html = `<table><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
         for (const [caseId, caseData] of Object.entries(CASES)) {
             html += `<tr style="background: rgba(255,77,77,0.1);"><td colspan="4" style="color: #ffd700; font-weight: bold;">${caseData.name}</td></tr>`;
             for (const item of caseData.items) {
-                html += `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td><span class="rarity-badge rarity-${item.rarity}">${item.rarity}</span></td>
-                        <td>${item.chance}%</td>
-                        <td><button class="btn" style="padding: 4px 12px;" onclick="showPreview('${item.name}', '${item.rarity}')">🔍 Превью</button></td>
-                    </tr>
-                `;
+                html += `<tr><td>${item.name}</td><td><span class="rarity-badge rarity-${item.rarity}">${item.rarity}</span></td><td>${item.chance}%</td><td><button class="btn" style="padding: 4px 12px;" onclick="showPreview('${item.name}', '${item.rarity}')">🔍 Превью</button></td></tr>`;
             }
         }
-        
         table.innerHTML = html;
     }
     
-    // ОТКРЫТИЕ КЕЙСА
     function openCaseType(caseId) {
         const caseData = CASES[caseId];
         if (!caseData) return;
-        
-        if (game.gold < caseData.price) {
-            showToast(`❌ Не хватает! Нужно ${caseData.price} G`);
-            return;
-        }
-        
+        if (game.gold < caseData.price) { showToast(`❌ Нужно ${caseData.price} G`); return; }
         game.gold -= caseData.price;
-        saveGame();
+        saveGameData();
         updateUI();
         
-        // Выбор предмета по шансам
         const random = Math.random() * 100;
         let accumulated = 0;
         let selectedItem = null;
-        
         for (const item of caseData.items) {
             accumulated += item.chance;
-            if (random <= accumulated) {
-                selectedItem = item;
-                break;
-            }
+            if (random <= accumulated) { selectedItem = item; break; }
         }
-        
         if (!selectedItem) selectedItem = caseData.items[0];
-        
-        // Анимация рулетки
         showRoulette(selectedItem, caseData.items);
     }
     
-    // РУЛЕТКА
     function showRoulette(winItem, allItems) {
         const winIndex = 40;
         let spinItems = [];
-        
         for (let i = 0; i < 50; i++) {
-            if (i === winIndex) {
-                spinItems.push(winItem);
-            } else {
-                const randomItem = allItems[Math.floor(Math.random() * allItems.length)];
-                spinItems.push(randomItem);
-            }
+            if (i === winIndex) spinItems.push(winItem);
+            else spinItems.push(allItems[Math.floor(Math.random() * allItems.length)]);
         }
-        
         const container = document.getElementById('rouletteContainer');
-        container.innerHTML = spinItems.map(item => `
-            <div style="width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-                <div style="font-size:36px;">${item.name.includes("Перчатки") ? "🧤" : "🔫"}</div>
-                <div style="font-size:10px; color:${rarityColors[item.rarity]}">${item.name}</div>
-            </div>
-        `).join('');
-        
+        container.innerHTML = spinItems.map(item => `<div style="width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-size:36px;">${item.name.includes("Перчатки") ? "🧤" : "🔫"}</div><div style="font-size:10px; color:${rarityColors[item.rarity]}">${item.name}</div></div>`).join('');
         const modal = document.getElementById('rouletteModal');
         modal.style.display = 'flex';
         setTimeout(() => container.style.transform = `translateX(${-(winIndex * 120 + 100)}px)`, 50);
-        
         window.pendingWinItem = winItem;
     }
     
@@ -371,7 +514,7 @@
         const winItem = window.pendingWinItem;
         if (winItem) {
             game.skins.push({ name: winItem.name, rarity: winItem.rarity });
-            saveGame();
+            saveGameData();
             updateUI();
             showToast(`🎉 Выпало: ${winItem.name}! 🎉`);
             showPreview(winItem.name, winItem.rarity);
@@ -383,65 +526,47 @@
         if (container) container.style.transform = '';
     }
     
-    // ========== 3D ПРЕВЬЮ ==========
+    // 3D Превью
     let previewScene, previewCamera, previewRenderer, previewModel;
     
     function showPreview(itemName, rarity) {
         const modal = document.getElementById('previewModal');
-        const title = document.getElementById('previewTitle');
-        title.innerHTML = `🔍 ${itemName} <span style="color:${rarityColors[rarity]}">(${rarity})</span>`;
+        document.getElementById('previewTitle').innerHTML = `🔍 ${itemName} <span style="color:${rarityColors[rarity]}">(${rarity})</span>`;
         modal.style.display = 'flex';
-        
         const canvas = document.getElementById('previewCanvas');
-        const w = canvas.clientWidth;
-        const h = canvas.clientHeight;
-        
+        const w = canvas.clientWidth, h = canvas.clientHeight;
         if (!previewRenderer) {
             previewRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
             previewScene = new THREE.Scene();
-            previewCamera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            previewCamera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
             previewCamera.position.set(0, 0, 5);
-            
             const light = new THREE.DirectionalLight(0xffffff, 1);
             light.position.set(2, 3, 4);
             previewScene.add(light);
             previewScene.add(new THREE.AmbientLight(0x404060));
         }
-        
         previewRenderer.setSize(w, h);
-        previewCamera.aspect = w / h;
+        previewCamera.aspect = w/h;
         previewCamera.updateProjectionMatrix();
-        
         if (previewModel) previewScene.remove(previewModel);
-        
         const color = rarityColors[rarity] || "#ff4d4d";
         const material = new THREE.MeshStandardMaterial({ color: color, metalness: 0.7, roughness: 0.3, emissive: color, emissiveIntensity: 0.2 });
-        
         if (itemName.includes("Перчатки")) {
             const group = new THREE.Group();
-            const glove = new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 0.5), material);
-            group.add(glove);
+            group.add(new THREE.Mesh(new THREE.BoxGeometry(1, 0.8, 0.5), material));
             previewModel = group;
         } else if (itemName.includes("Karambit") || itemName.includes("Bayonet") || itemName.includes("Butterfly")) {
             const group = new THREE.Group();
             const blade = new THREE.Mesh(new THREE.ConeGeometry(0.3, 1.2, 8), material);
             blade.rotation.x = 0.5;
             blade.position.y = 0.6;
-            const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
-            handle.position.y = -0.2;
-            group.add(blade, handle);
+            group.add(blade, new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), new THREE.MeshStandardMaterial({ color: 0x8B4513 })));
             previewModel = group;
         } else {
             previewModel = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.3, 0.2), material);
         }
-        
         previewScene.add(previewModel);
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            if (previewModel) previewModel.rotation.y += 0.01;
-            if (previewRenderer) previewRenderer.render(previewScene, previewCamera);
-        }
+        function animate() { requestAnimationFrame(animate); if (previewModel) previewModel.rotation.y += 0.01; previewRenderer.render(previewScene, previewCamera); }
         animate();
     }
     
@@ -450,8 +575,8 @@
         if (previewModel) previewScene.remove(previewModel);
     }
     
-    // ========== ОСТАЛЬНЫЕ ФУНКЦИИ ==========
-    function generateId() { return '100-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
+    // Основные функции игры
+    function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
     
     function showToast(msg) {
         const t = document.createElement('div');
@@ -480,14 +605,14 @@
         return 0;
     }
     
-    function saveGame() {
+    function saveGameData() {
         if (!game.id) return;
         localStorage.setItem('sc_game_' + game.id, JSON.stringify(game));
         localStorage.setItem('sc_last_id', game.id);
         gun.get('p_' + game.id).put({ id: game.id, nick: game.nick, gold: game.gold, mmr: game.mmr, wins: game.wins, lastSeen: Date.now() });
     }
     
-    function loadGame() {
+    function loadGameData() {
         const savedId = localStorage.getItem('sc_last_id');
         if (savedId) {
             const raw = localStorage.getItem('sc_game_' + savedId);
@@ -506,10 +631,10 @@
                 } catch(e) {}
             }
         }
-        if (!game.id) { game.id = generateId(); saveGame(); }
+        if (!game.id) { game.id = generateId(); saveGameData(); }
         if (game.skins.length === 0) {
             game.skins.push({ name: "Перчатки (Синие)", rarity: "rare" });
-            saveGame();
+            saveGameData();
         }
         updateUI();
         updateMegaTimer();
@@ -549,7 +674,7 @@
     
     function equipWeapon(weaponId) {
         for (let id in game.weapons) game.weapons[id].active = (id === weaponId);
-        saveGame();
+        saveGameData();
         updateUI();
         showToast(`🔫 ${game.weapons[weaponId].name} экипирован`);
     }
@@ -563,7 +688,7 @@
             const active = Object.entries(game.weapons).find(([,w]) => w.active);
             if (active) {
                 game.weapons[active[0]].skin = skin;
-                saveGame();
+                saveGameData();
                 updateUI();
                 showToast(`🎨 ${skin.name} надет на ${active[1].name}`);
             }
@@ -577,10 +702,7 @@
         for (const [code, data] of Object.entries(BUILTIN_PROMOS)) {
             if (!game.usedPromos.includes(code)) available.push({ code, ...data });
         }
-        if (available.length === 0) {
-            container.innerHTML = '<div class="card">✅ Все промокоды активированы!</div>';
-            return;
-        }
+        if (available.length === 0) { container.innerHTML = '<div class="card">✅ Все промокоды активированы!</div>'; return; }
         container.innerHTML = available.map(p => `
             <div class="promo-banner" onclick="claimPromo('${p.code}')">
                 <span>🎁 ${p.desc}</span>
@@ -593,9 +715,9 @@
         if (game.usedPromos.includes(code)) { showToast("Уже активирован!"); return; }
         const promo = BUILTIN_PROMOS[code];
         game.gold += promo.gold;
-        if (promo.skin) game.skins.push({ name: promo.skin, rarity: getSkinRarity(promo.skin) });
+        if (promo.skin) game.skins.push({ name: promo.skin, rarity: "legendary" });
         game.usedPromos.push(code);
-        saveGame();
+        saveGameData();
         updateUI();
         renderPromos();
         showToast(`✅ +${promo.gold} G!`);
@@ -603,14 +725,7 @@
         setTimeout(() => document.body.classList.remove('mega-flash'), 700);
     };
     
-    function getSkinRarity(name) {
-        if (name.includes("Перчатки (Синие)")) return "rare";
-        if (name.includes("Перчатки (Красные)")) return "legendary";
-        if (name.includes("Dragon Lore") || name.includes("Karambit")) return "arcane";
-        return "common";
-    }
-    
-    document.getElementById('clickBtn').onclick = () => { game.gold += 2; saveGame(); updateUI(); };
+    document.getElementById('clickBtn').onclick = () => { game.gold += 2; saveGameData(); updateUI(); };
     
     function updateMegaTimer() {
         const cooldown = 5 * 60 * 60 * 1000;
@@ -633,7 +748,7 @@
         if (Date.now() - (game.lastMegaClick || 0) >= 5 * 60 * 60 * 1000) {
             game.gold += 1000;
             game.lastMegaClick = Date.now();
-            saveGame();
+            saveGameData();
             updateUI();
             updateMegaTimer();
             document.body.classList.add('mega-flash');
@@ -641,13 +756,13 @@
         }
     };
     
-    setInterval(() => { const auto = getAutoGain(); if (auto > 0) { game.gold += auto; saveGame(); updateUI(); } }, 1000);
+    setInterval(() => { const auto = getAutoGain(); if (auto > 0) { game.gold += auto; saveGameData(); updateUI(); } }, 1000);
     
     function copyPlayerId() { if (game.id) navigator.clipboard.writeText(game.id); showToast("ID скопирован!"); }
     
     document.getElementById('changeNickBtn').onclick = () => {
         const newNick = prompt("Новый ник:", game.nick);
-        if (newNick?.trim()) { game.nick = newNick.trim().substring(0, 20); saveGame(); updateUI(); showToast(`Ник изменён`); }
+        if (newNick?.trim()) { game.nick = newNick.trim().substring(0, 20); saveGameData(); updateUI(); showToast(`Ник изменён`); }
     };
     
     document.getElementById('resetBtn').onclick = () => {
@@ -664,11 +779,11 @@
             if (btn.dataset.page === 'stats') {
                 const stats = game.skins.reduce((acc, s) => { acc[s.rarity] = (acc[s.rarity] || 0) + 1; return acc; }, {});
                 document.getElementById('statsContent').innerHTML = `
-                    <div>💰 Голда: ${Math.floor(game.gold)} G</div>
-                    <div>📊 MMR: ${game.mmr}</div>
+                    <div>🪙 Голда: ${Math.floor(game.gold)} G</div>
+                    <div>📈 MMR: ${game.mmr}</div>
                     <div>🏆 Побед: ${game.wins}</div>
                     <div>🎒 Скинов: ${game.skins.length}</div>
-                    <div>🎫 Промокодов: ${game.usedPromos.length}/${Object.keys(BUILTIN_PROMOS).length}</div>
+                    <div>💻 Промокодов: ${game.usedPromos.length}/${Object.keys(BUILTIN_PROMOS).length}</div>
                     <hr><h4>Редкости скинов:</h4>
                     ${Object.entries(stats).map(([r,c]) => `<div style="color:${rarityColors[r]}">${r}: ${c} шт.</div>`).join('')}
                 `;
@@ -678,16 +793,9 @@
     
     gun.get('server_maintenance').on(data => { document.getElementById('maintenanceScreen').style.display = data?.active ? 'flex' : 'none'; });
     
-    function startApp() {
-        document.getElementById('introScreen').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'block';
-        renderCases();
-        renderChances();
-    }
+    // ЗАПУСК
+    startLoading();
     
-    loadGame();
-    
-    window.startApp = startApp;
     window.openCaseType = openCaseType;
     window.closeRoulette = closeRoulette;
     window.showPreview = showPreview;
@@ -697,9 +805,9 @@
     window.copyPlayerId = copyPlayerId;
     window.claimPromo = claimPromo;
     
-    const style = document.createElement('style');
-    style.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }`;
-    document.head.appendChild(style);
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }`;
+    document.head.appendChild(styleEl);
 </script>
 </body>
-    </html>
+</html>
