@@ -87,7 +87,7 @@
             height: 100%;
             background: linear-gradient(90deg, #ff4d4d, #ffd700);
             border-radius: 10px;
-            transition: width 0.3s ease;
+            transition: width 0.1s linear;
             box-shadow: 0 0 15px #ff4d4d;
         }
         
@@ -96,6 +96,14 @@
             color: rgba(255,255,255,0.8);
             margin-top: 10px;
             font-weight: 500;
+        }
+        
+        .loading-timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-top: 15px;
+            text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
         
         .loading-tips {
@@ -113,7 +121,7 @@
             50% { opacity: 1; }
         }
         
-        /* Парящие частицы на загрузке */
+        /* Парящие частицы */
         .loading-particles {
             position: absolute;
             width: 100%;
@@ -210,12 +218,14 @@
         @media (max-width: 600px) {
             .click-btn { width: 120px; height: 120px; font-size: 16px; }
             .gold { font-size: 32px; }
+            .loading-logo h1 { font-size: 40px; }
+            .loading-timer { font-size: 18px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН -->
+<!-- ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН С ТАЙМЕРОМ -->
 <div class="loading-screen" id="loadingScreen">
     <div class="loading-particles" id="loadingParticles"></div>
     <div class="loading-logo">
@@ -225,7 +235,8 @@
     <div class="loading-bar-container">
         <div class="loading-bar" id="loadingBar"></div>
     </div>
-    <div class="loading-text" id="loadingText">ЗАГРУЗКА... 0%</div>
+    <div class="loading-text" id="loadingText">ЗАГРУЗКА...</div>
+    <div class="loading-timer" id="loadingTimer">10</div>
     <div class="loading-tips" id="loadingTip">💡 Открывай кейсы и получай легендарные скины!</div>
 </div>
 
@@ -330,7 +341,8 @@
     };
     
     const BUILTIN_PROMOS = {
-        "W_OR_L":   { gold: 500,  skin: null, desc: "🔥 Приветственный бонус!" },
+        "WELCOME2026":   { gold: 500,  skin: null, desc: "🔥 Приветственный бонус!" },
+        "BLOODUPDATE":   { gold: 1000, skin: "Перчатки (Красные)", desc: "🩸 Blood Update!" },
     };
     
     const rarityColors = {
@@ -371,7 +383,9 @@
         }
     };
     
-    // ========== ЗАГРУЗОЧНЫЙ ЭКРАН ==========
+    // ========== ФЕЙК ЗАГРУЗКА С ТАЙМЕРОМ ==========
+    const LOADING_SECONDS = 10; // ← СЮДА ПИШИ СЕКУНДЫ: 10, 7, 15 и т.д.
+    
     function createParticles() {
         const container = document.getElementById('loadingParticles');
         for (let i = 0; i < 50; i++) {
@@ -392,11 +406,13 @@
         "💡 Открывай кейсы и получай легендарные скины!",
         "⚡ MEGA-клик даёт 1000 G раз в 5 часов!",
         "🎨 Скины увеличивают авто-доход!",
+        "👥 Добавляй друзей и соревнуйся!",
         "🔥 Легендарные скины выпадают с шансом 2-8%",
         "💰 Кликай быстрее — зарабатывай больше!",
-        "🎁 Промокоды активируются на главном экране!"
-        "🤝 Поддерживай разработчиков игры!"
-        "📎 Нашёл баг? Сообщи в боте"
+        "🎁 Промокоды активируются на главном экране!",
+        "🔫 У каждого оружия свой скин-бонус!",
+        "📦 В кейсах есть предметы разной редкости",
+        "⭐ Battle Pass скоро появится!"
     ];
     
     let currentTip = 0;
@@ -413,31 +429,65 @@
     }
     setInterval(rotateTips, 4000);
     
-    async function startLoading() {
+    async function startFakeLoading() {
         createParticles();
         const loadingBar = document.getElementById('loadingBar');
         const loadingText = document.getElementById('loadingText');
-        const steps = [
-            { progress: 10, text: "Инициализация ядра...", delay: 200 },
-            { progress: 25, text: "Загрузка базы данных Gun...", delay: 300 },
-            { progress: 40, text: "Подключение к серверу...", delay: 250 },
-            { progress: 55, text: "Загрузка профиля игрока...", delay: 200 },
-            { progress: 70, text: "Синхронизация инвентаря...", delay: 250 },
-            { progress: 85, text: "Загрузка кейсов и скинов...", delay: 200 },
-            { progress: 95, text: "Почти готово...", delay: 200 },
-            { progress: 100, text: "Вход в игру...", delay: 300 }
+        const loadingTimer = document.getElementById('loadingTimer');
+        
+        const loadingSteps = [
+            { progress: 5, text: "Инициализация ядра..." },
+            { progress: 15, text: "Подключение к базе данных..." },
+            { progress: 30, text: "Синхронизация с сервером..." },
+            { progress: 45, text: "Загрузка профиля игрока..." },
+            { progress: 60, text: "Проверка обновлений..." },
+            { progress: 75, text: "Загрузка кейсов и скинов..." },
+            { progress: 90, text: "Финальная подготовка..." },
+            { progress: 100, text: "Вход в игру..." }
         ];
         
-        for (const step of steps) {
-            await new Promise(resolve => setTimeout(resolve, step.delay));
-            loadingBar.style.width = step.progress + '%';
-            loadingText.textContent = step.text + ' ' + step.progress + '%';
-        }
+        const totalSteps = loadingSteps.length;
+        let stepIndex = 0;
+        let currentProgress = 0;
+        let secondsLeft = LOADING_SECONDS;
         
-        await new Promise(resolve => setTimeout(resolve, 500));
-        document.getElementById('loadingScreen').style.opacity = '0';
+        loadingTimer.textContent = secondsLeft;
+        
+        return new Promise((resolve) => {
+            const interval = setInterval(() => {
+                secondsLeft--;
+                loadingTimer.textContent = secondsLeft;
+                
+                // Прогресс-бар в зависимости от времени
+                const targetProgress = ((LOADING_SECONDS - secondsLeft) / LOADING_SECONDS) * 100;
+                currentProgress = targetProgress;
+                loadingBar.style.width = currentProgress + '%';
+                
+                // Обновляем текст в зависимости от прогресса
+                const stepIndexByProgress = Math.floor((currentProgress / 100) * totalSteps);
+                if (stepIndexByProgress < totalSteps) {
+                    loadingText.textContent = loadingSteps[stepIndexByProgress].text + ' ' + Math.floor(currentProgress) + '%';
+                }
+                
+                if (secondsLeft <= 0) {
+                    clearInterval(interval);
+                    loadingText.textContent = "ДОБРО ПОЖАЛОВАТЬ! 100%";
+                    loadingBar.style.width = '100%';
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
+    
+    async function initGame() {
+        await startFakeLoading();
+        
+        // Плавное исчезновение
+        const loadingScreen = document.getElementById('loadingScreen');
+        loadingScreen.style.opacity = '0';
+        
         setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
+            loadingScreen.style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
             initGameUI();
         }, 1000);
@@ -448,6 +498,18 @@
         renderChances();
         updateUI();
         loadGameData();
+        
+        // Онлайн счётчик
+        setInterval(() => {
+            let online = 30;
+            const now = Date.now();
+            gun.get('players_index').map().once((data, id) => {
+                if (id) gun.get('p_' + id).once(d => { if (d && d.lastSeen && now - d.lastSeen < 45000) online++; });
+            });
+            setTimeout(() => {
+                document.getElementById('onlineCounter').innerHTML = `🟢 ${online} игроков онлайн`;
+            }, 1000);
+        }, 15000);
     }
     
     function renderCases() {
@@ -466,7 +528,7 @@
     function renderChances() {
         const table = document.getElementById('chancesTable');
         if (!table) return;
-        let html = `<table><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
+        let html = `<tr><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
         for (const [caseId, caseData] of Object.entries(CASES)) {
             html += `<tr style="background: rgba(255,77,77,0.1);"><td colspan="4" style="color: #ffd700; font-weight: bold;">${caseData.name}</td></tr>`;
             for (const item of caseData.items) {
@@ -560,7 +622,8 @@
             const blade = new THREE.Mesh(new THREE.ConeGeometry(0.3, 1.2, 8), material);
             blade.rotation.x = 0.5;
             blade.position.y = 0.6;
-            group.add(blade, new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), new THREE.MeshStandardMaterial({ color: 0x8B4513 })));
+            group.add(blade);
+            group.add(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.2), new THREE.MeshStandardMaterial({ color: 0x8B4513 })));
             previewModel = group;
         } else {
             previewModel = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.3, 0.2), material);
@@ -575,7 +638,7 @@
         if (previewModel) previewScene.remove(previewModel);
     }
     
-    // Основные функции игры
+    // Основные функции
     function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
     
     function showToast(msg) {
@@ -650,7 +713,7 @@
         
         const skinsDiv = document.getElementById('skinsList');
         if (skinsDiv) {
-            skinsDiv.innerHTML = game.skins.map((s, i) => `
+            skin3sDiv.innerHTML = game.skins.map((s, i) => `
                 <div class="item-card" onclick="equipSkin(${i})">
                     <div style="font-size:28px;">${s.name.includes("Перчатки") ? "🧤" : "🔫"}</div>
                     <div>${s.name}</div>
@@ -779,11 +842,11 @@
             if (btn.dataset.page === 'stats') {
                 const stats = game.skins.reduce((acc, s) => { acc[s.rarity] = (acc[s.rarity] || 0) + 1; return acc; }, {});
                 document.getElementById('statsContent').innerHTML = `
-                    <div>🪙 Голда: ${Math.floor(game.gold)} G</div>
-                    <div>📈 MMR: ${game.mmr}</div>
+                    <div>💰 Голда: ${Math.floor(game.gold)} G</div>
+                    <div>📊 MMR: ${game.mmr}</div>
                     <div>🏆 Побед: ${game.wins}</div>
                     <div>🎒 Скинов: ${game.skins.length}</div>
-                    <div>💻 Промокодов: ${game.usedPromos.length}/${Object.keys(BUILTIN_PROMOS).length}</div>
+                    <div>🎫 Промокодов: ${game.usedPromos.length}/${Object.keys(BUILTIN_PROMOS).length}</div>
                     <hr><h4>Редкости скинов:</h4>
                     ${Object.entries(stats).map(([r,c]) => `<div style="color:${rarityColors[r]}">${r}: ${c} шт.</div>`).join('')}
                 `;
@@ -793,8 +856,8 @@
     
     gun.get('server_maintenance').on(data => { document.getElementById('maintenanceScreen').style.display = data?.active ? 'flex' : 'none'; });
     
-    // ЗАПУСК
-    startLoading();
+    // ЗАПУСК ФЕЙК ЗАГРУЗКИ
+    initGame();
     
     window.openCaseType = openCaseType;
     window.closeRoulette = closeRoulette;
