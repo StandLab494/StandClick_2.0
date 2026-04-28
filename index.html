@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>StandClick 2.0 — Blood Update</title>
+    <title>StandClick 2.0 — Standoff 2 Skins</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
@@ -96,21 +96,7 @@
             overflow: hidden;
         }
         
-        .case-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,77,77,0.1), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .case-card:hover::before { opacity: 1; }
         .case-card:hover { transform: translateY(-5px); border-color: #ff4d4d; }
-        
         .case-icon { font-size: 56px; margin-bottom: 15px; }
         .case-name { font-size: 22px; font-weight: bold; margin-bottom: 10px; }
         .case-price { color: #ffd700; font-size: 18px; font-weight: bold; margin: 10px 0; }
@@ -167,6 +153,7 @@
         .rarity-epic { background: #ec4899; }
         .rarity-legendary { background: #f97316; }
         .rarity-arcane { background: #ef4444; }
+        .rarity-mythic { background: #06b6d4; }
         
         .btn {
             background: linear-gradient(135deg, #ff4d4d, #cc0000);
@@ -454,48 +441,187 @@ const rarityColors = {
     legendary: "#f97316", arcane: "#ef4444", mythic: "#06b6d4"
 };
 
+const ALL_SKINS = {
+    knives: [
+        { name: "Karambit Fade", rarity: "arcane", icon: "🗡️", type: "karambit" },
+        { name: "Karambit Doppler", rarity: "arcane", icon: "🗡️", type: "karambit" },
+        { name: "Karambit Tiger Tooth", rarity: "legendary", icon: "🗡️", type: "karambit" },
+        { name: "Karambit Crimson Web", rarity: "legendary", icon: "🗡️", type: "karambit" },
+        { name: "M9 Bayonet Fade", rarity: "arcane", icon: "🗡️", type: "m9" },
+        { name: "M9 Bayonet Doppler", rarity: "arcane", icon: "🗡️", type: "m9" },
+        { name: "M9 Bayonet Lore", rarity: "legendary", icon: "🗡️", type: "m9" },
+        { name: "Butterfly Fade", rarity: "arcane", icon: "🗡️", type: "butterfly" },
+        { name: "Butterfly Doppler", rarity: "arcane", icon: "🗡️", type: "butterfly" },
+        { name: "Butterfly Tiger Tooth", rarity: "legendary", icon: "🗡️", type: "butterfly" },
+        { name: "Bayonet Fade", rarity: "arcane", icon: "🗡️", type: "bayonet" },
+        { name: "Bayonet Doppler", rarity: "arcane", icon: "🗡️", type: "bayonet" },
+        { name: "Huntsman Fade", rarity: "legendary", icon: "🗡️", type: "huntsman" },
+        { name: "Falchion Fade", rarity: "legendary", icon: "🗡️", type: "falchion" },
+        { name: "Shadow Daggers Fade", rarity: "legendary", icon: "🗡️", type: "daggers" },
+        { name: "Ursus Fade", rarity: "epic", icon: "🗡️", type: "ursus" },
+        { name: "Navaja Fade", rarity: "epic", icon: "🗡️", type: "navaja" },
+        { name: "Stiletto Fade", rarity: "mythic", icon: "🗡️", type: "stiletto" },
+        { name: "Talon Fade", rarity: "mythic", icon: "🗡️", type: "talon" }
+    ],
+    gloves: [
+        { name: "Спортивные перчатки", rarity: "common", icon: "🧤", type: "glove" },
+        { name: "Боксерские перчатки", rarity: "rare", icon: "🧤", type: "glove" },
+        { name: "Кожаные перчатки", rarity: "epic", icon: "🧤", type: "glove" },
+        { name: "Мото перчатки", rarity: "legendary", icon: "🧤", type: "glove" },
+        { name: "Перчатки-когти", rarity: "arcane", icon: "🧤", type: "claw" },
+        { name: "Hydra Gloves", rarity: "arcane", icon: "🧤", type: "glove" },
+        { name: "Driver Gloves", rarity: "legendary", icon: "🧤", type: "glove" },
+        { name: "Hand Wraps", rarity: "epic", icon: "🧤", type: "wrap" }
+    ],
+    weapons: [
+        { name: "AK-47 Bloodsport", rarity: "legendary", icon: "🔫", type: "ak47" },
+        { name: "AK-47 Fire Serpent", rarity: "arcane", icon: "🔫", type: "ak47" },
+        { name: "AK-47 Wild Lotus", rarity: "mythic", icon: "🔫", type: "ak47" },
+        { name: "AWP Dragon Lore", rarity: "mythic", icon: "🔫", type: "awp" },
+        { name: "AWP Medusa", rarity: "arcane", icon: "🔫", type: "awp" },
+        { name: "AWP Lightning Strike", rarity: "legendary", icon: "🔫", type: "awp" },
+        { name: "AWP Gungnir", rarity: "mythic", icon: "🔫", type: "awp" },
+        { name: "M4A4 Howl", rarity: "mythic", icon: "🔫", type: "m4a4" },
+        { name: "M4A4 Emperor", rarity: "legendary", icon: "🔫", type: "m4a4" },
+        { name: "M4A1-S Printstream", rarity: "arcane", icon: "🔫", type: "m4a1" },
+        { name: "Desert Eagle Blaze", rarity: "legendary", icon: "🔫", type: "deagle" },
+        { name: "Desert Eagle Code Red", rarity: "arcane", icon: "🔫", type: "deagle" },
+        { name: "USP-S Kill Confirmed", rarity: "legendary", icon: "🔫", type: "usp" },
+        { name: "Glock-18 Fade", rarity: "arcane", icon: "🔫", type: "glock" },
+        { name: "SSG 08 Death's Head", rarity: "epic", icon: "🔫", type: "ssg" },
+        { name: "P250 Whiteout", rarity: "rare", icon: "🔫", type: "p250" }
+    ]
+};
+
 const CASES = {
     common: {
         name: "📦 Обычный кейс", price: 500, icon: "📦",
-        items: [
-            { name: "G22 Frost", rarity: "common", chance: 40 },
-            { name: "MP5 Swarm", rarity: "common", chance: 35 },
-            { name: "SSG 08 Abyss", rarity: "common", chance: 20 },
-            { name: "Перчатки (Синие)", rarity: "rare", chance: 5 }
-        ]
+        items: [...ALL_SKINS.weapons.slice(10, 14), ...ALL_SKINS.gloves.slice(0, 2)]
     },
     rare: {
         name: "✨ Редкий кейс", price: 1500, icon: "✨",
-        items: [
-            { name: "AKM Tiger", rarity: "rare", chance: 45 },
-            { name: "Desert Eagle Cobra", rarity: "rare", chance: 30 },
-            { name: "M4A4 Griffin", rarity: "epic", chance: 15 },
-            { name: "Перчатки (Красные)", rarity: "legendary", chance: 8 },
-            { name: "Karambit Gold", rarity: "arcane", chance: 2 }
-        ]
+        items: [...ALL_SKINS.weapons.slice(5, 10), ...ALL_SKINS.gloves.slice(2, 4), ...ALL_SKINS.knives.slice(10, 14)]
     },
     legendary: {
         name: "🔥 Легендарный кейс", price: 5000, icon: "🔥",
-        items: [
-            { name: "AWP Dragon Lore", rarity: "legendary", chance: 40 },
-            { name: "M9 Bayonet", rarity: "legendary", chance: 25 },
-            { name: "Butterfly Fade", rarity: "arcane", chance: 15 },
-            { name: "Перчатки (Оранжевые)", rarity: "arcane", chance: 12 },
-            { name: "Karambit Ruby", rarity: "arcane", chance: 5 },
-            { name: "M9 Forever", rarity: "mythic", chance: 3 }
-        ]
+        items: [...ALL_SKINS.weapons.slice(0, 5), ...ALL_SKINS.gloves.slice(4, 7), ...ALL_SKINS.knives.slice(0, 10)]
     }
 };
 
+CASES.common.items.forEach(item => { item.chance = 80 / CASES.common.items.length; });
+CASES.rare.items.forEach(item => { item.chance = 60 / CASES.rare.items.length; });
+CASES.legendary.items.forEach(item => { item.chance = 40 / CASES.legendary.items.length; });
+
 let previewScene, previewCamera, previewRenderer, previewModel;
 
-function createWeaponModel(itemName, baseColor) {
+function getWeaponType(itemName) {
+    if (itemName.includes("Karambit")) return "karambit";
+    if (itemName.includes("M9")) return "m9";
+    if (itemName.includes("Butterfly")) return "butterfly";
+    if (itemName.includes("Bayonet")) return "bayonet";
+    if (itemName.includes("Huntsman")) return "huntsman";
+    if (itemName.includes("Falchion")) return "falchion";
+    if (itemName.includes("Daggers")) return "daggers";
+    if (itemName.includes("Ursus")) return "ursus";
+    if (itemName.includes("Navaja")) return "navaja";
+    if (itemName.includes("Stiletto")) return "stiletto";
+    if (itemName.includes("Talon")) return "talon";
+    if (itemName.includes("AK-47")) return "ak47";
+    if (itemName.includes("AWP")) return "awp";
+    if (itemName.includes("M4A4")) return "m4a4";
+    if (itemName.includes("M4A1-S")) return "m4a1";
+    if (itemName.includes("Desert Eagle")) return "deagle";
+    if (itemName.includes("USP-S")) return "usp";
+    if (itemName.includes("Glock-18")) return "glock";
+    if (itemName.includes("SSG")) return "ssg";
+    if (itemName.includes("Перчатки") || itemName.includes("Gloves") || itemName.includes("Wraps")) return "glove";
+    return "default";
+}
+
+function createWeaponModel(itemName, baseColor, type) {
     const group = new THREE.Group();
     const matBody = new THREE.MeshStandardMaterial({ color: baseColor, metalness: 0.85, roughness: 0.25, emissive: baseColor, emissiveIntensity: 0.1 });
     const matDark = new THREE.MeshStandardMaterial({ color: 0x2a2a2a, metalness: 0.7, roughness: 0.4 });
     const matGold = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.95, roughness: 0.2 });
+    const matWood = new THREE.MeshStandardMaterial({ color: 0x8B5A2B, roughness: 0.8 });
     
-    if (itemName.includes("AWP")) {
+    if (type === "karambit") {
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 16, 32), matGold);
+        ring.position.set(0, -0.8, 0);
+        ring.rotation.x = Math.PI / 2;
+        group.add(ring);
+        const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.9, 16), matDark);
+        handle.position.set(0, -0.2, 0);
+        group.add(handle);
+        const blade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.3, 8), matBody);
+        blade.position.set(0.25, 0.7, 0);
+        blade.rotation.z = -0.4;
+        blade.rotation.x = 0.2;
+        group.add(blade);
+    }
+    else if (type === "m9") {
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.9, 0.2), matDark);
+        handle.position.set(0, -0.3, 0);
+        group.add(handle);
+        const guard = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.25), matGold);
+        guard.position.set(0, 0.1, 0);
+        group.add(guard);
+        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.4, 0.08), matBody);
+        blade.position.set(0, 0.9, 0);
+        group.add(blade);
+        const edge = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 4), matGold);
+        edge.position.set(0, 1.55, 0);
+        group.add(edge);
+    }
+    else if (type === "butterfly") {
+        const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.9, 0.2), matDark);
+        handle1.position.set(-0.15, -0.3, 0);
+        handle1.rotation.z = -0.2;
+        group.add(handle1);
+        const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.9, 0.2), matDark);
+        handle2.position.set(0.15, -0.3, 0);
+        handle2.rotation.z = 0.2;
+        group.add(handle2);
+        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.08), matBody);
+        blade.position.set(0, 0.7, 0);
+        group.add(blade);
+    }
+    else if (type === "bayonet") {
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.2), matDark);
+        handle.position.set(0, -0.2, 0);
+        group.add(handle);
+        const blade = new THREE.Mesh(new THREE.ConeGeometry(0.22, 1.5, 6), matBody);
+        blade.position.set(0, 0.8, 0);
+        group.add(blade);
+    }
+    else if (type === "glove") {
+        const gloveMat = new THREE.MeshStandardMaterial({ color: baseColor, metalness: 0.2, roughness: 0.6 });
+        const palm = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.5, 0.3), gloveMat);
+        palm.position.set(0, 0, 0);
+        group.add(palm);
+        const thumb = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), gloveMat);
+        thumb.position.set(0.5, -0.1, 0.2);
+        group.add(thumb);
+        const fingers = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.25), gloveMat);
+        fingers.position.set(-0.1, 0.25, 0.15);
+        group.add(fingers);
+        group.scale.set(1.2, 1.2, 1.2);
+    }
+    else if (type === "ak47") {
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 0.2), matBody);
+        group.add(body);
+        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.18), matWood);
+        grip.position.set(-0.7, -0.3, 0);
+        group.add(grip);
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 16), matDark);
+        barrel.rotation.z = Math.PI / 2;
+        barrel.position.set(1, 0.1, 0);
+        group.add(barrel);
+        const mag = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.5, 0.18), matDark);
+        mag.position.set(0.2, -0.35, 0);
+        group.add(mag);
+    }
+    else if (type === "awp") {
         const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.28, 0.22), matBody);
         body.position.set(0, 0, 0);
         group.add(body);
@@ -511,57 +637,36 @@ function createWeaponModel(itemName, baseColor) {
         stock.position.set(-1.3, -0.05, 0);
         group.add(stock);
     }
-    else if (itemName.includes("Karambit")) {
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 16, 32), matGold);
-        ring.position.set(0, -0.8, 0);
-        ring.rotation.x = Math.PI / 2;
-        group.add(ring);
-        const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.9, 16), matDark);
-        handle.position.set(0, -0.2, 0);
-        group.add(handle);
-        const blade = new THREE.Mesh(new THREE.ConeGeometry(0.28, 1.3, 8), matBody);
-        blade.position.set(0.25, 0.7, 0);
-        blade.rotation.z = -0.4;
-        blade.rotation.x = 0.2;
-        group.add(blade);
+    else if (type === "m4a4") {
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.28, 0.18), matBody);
+        group.add(body);
+        const stock = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.22, 0.16), matDark);
+        stock.position.set(-0.9, 0, 0);
+        group.add(stock);
+        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.5, 0.16), matDark);
+        grip.position.set(-0.3, -0.3, 0);
+        group.add(grip);
+        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 16), matDark);
+        barrel.rotation.z = Math.PI / 2;
+        barrel.position.set(0.9, 0.1, 0);
+        group.add(barrel);
     }
-    else if (itemName.includes("M9") || itemName.includes("Bayonet")) {
-        const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.9, 0.2), matDark);
-        handle.position.set(0, -0.3, 0);
-        group.add(handle);
-        const guard = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.25), matGold);
-        guard.position.set(0, 0.1, 0);
-        group.add(guard);
-        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.4, 0.08), matBody);
-        blade.position.set(0, 0.9, 0);
-        group.add(blade);
-        const edge = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.3, 4), matGold);
-        edge.position.set(0, 1.55, 0);
-        group.add(edge);
-    }
-    else if (itemName.includes("Butterfly")) {
-        const handle1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.9, 0.2), matDark);
-        handle1.position.set(-0.15, -0.3, 0);
-        handle1.rotation.z = -0.2;
-        group.add(handle1);
-        const handle2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.9, 0.2), matDark);
-        handle2.position.set(0.15, -0.3, 0);
-        handle2.rotation.z = 0.2;
-        group.add(handle2);
-        const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.2, 0.08), matBody);
-        blade.position.set(0, 0.7, 0);
-        group.add(blade);
+    else if (type === "deagle") {
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.25, 0.15), matBody);
+        group.add(body);
+        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.45, 0.14), matWood);
+        grip.position.set(-0.3, -0.25, 0);
+        group.add(grip);
+        const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.18, 0.12), matBody);
+        barrel.position.set(0.35, 0.1, 0);
+        group.add(barrel);
     }
     else {
-        const body = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 0.2), matBody);
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.15), matBody);
         group.add(body);
-        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.6, 0.18), matDark);
-        grip.position.set(-0.7, -0.3, 0);
+        const grip = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.4, 0.14), matWood);
+        grip.position.set(-0.4, -0.25, 0);
         group.add(grip);
-        const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 16), matDark);
-        barrel.rotation.z = Math.PI / 2;
-        barrel.position.set(1, 0.1, 0);
-        group.add(barrel);
     }
     
     group.scale.set(0.8, 0.8, 0.8);
@@ -600,7 +705,8 @@ function showPreview(itemName, rarity) {
     if (previewModel) previewScene.remove(previewModel);
     
     const baseColor = rarityColors[rarity] || "#ff4d4d";
-    previewModel = createWeaponModel(itemName, baseColor);
+    const itemType = getWeaponType(itemName);
+    previewModel = createWeaponModel(itemName, baseColor, itemType);
     previewScene.add(previewModel);
     
     let angle = 0;
@@ -649,7 +755,7 @@ window.claimPromo = function(code) {
     const goldAmount = getRandomGold(promo.gold);
     game.gold += goldAmount;
     if (promo.skin) {
-        game.skins.push({ name: promo.skin, rarity: "mythic" });
+        game.skins.push({ name: promo.skin, rarity: "mythic", type: getWeaponType(promo.skin) });
         showToast(`🎁 Получен скин: ${promo.skin}!`);
     }
     if (goldAmount > 0) showToast(`💰 +${goldAmount.toLocaleString()} G!`);
@@ -709,7 +815,7 @@ function loadGameData() {
     }
     if (!game.id) { game.id = generateId(); saveGameData(); }
     if (game.skins.length === 0) {
-        game.skins.push({ name: "Перчатки (Синие)", rarity: "rare" });
+        game.skins.push({ name: "Спортивные перчатки", rarity: "common", type: "glove" });
         saveGameData();
     }
     updateUI();
@@ -730,7 +836,7 @@ function updateUI() {
     if (skinsDiv) {
         skinsDiv.innerHTML = game.skins.map((s, i) => `
             <div class="skin-card" onclick="equipSkin(${i})">
-                <div class="skin-icon">${s.name.includes("Перчатки") ? "🧤" : s.name.includes("AWP") ? "🔫" : "🗡️"}</div>
+                <div class="skin-icon">${s.icon || (s.name.includes("Перчатки") || s.name.includes("Gloves") ? "🧤" : s.name.includes("AWP") ? "🔫" : "🗡️")}</div>
                 <div class="skin-name">${s.name}</div>
                 <div class="skin-rarity rarity-${s.rarity}">${s.rarity}</div>
             </div>
@@ -761,8 +867,10 @@ function equipWeapon(weaponId) {
 function equipSkin(index) {
     const skin = game.skins[index];
     if (!skin) return;
-    if (skin.name.includes("Перчатки")) {
+    if (skin.name.includes("Перчатки") || skin.name.includes("Gloves") || skin.type === "glove" || skin.type === "claw" || skin.type === "wrap") {
         showToast(`🧤 ${skin.name} надеты!`);
+    } else if (skin.type === "karambit" || skin.type === "m9" || skin.type === "butterfly" || skin.type === "bayonet" || skin.name.includes("Knife")) {
+        showToast(`🗡️ ${skin.name} экипирован!`);
     } else {
         const active = Object.entries(game.weapons).find(([,w]) => w.active);
         if (active) {
@@ -810,7 +918,15 @@ function renderChances() {
     for (const [caseId, caseData] of Object.entries(CASES)) {
         html += `<tr style="background: rgba(255,77,77,0.1);"><td colspan="4" style="color: #ffd700; font-weight: bold;">${caseData.name}</td></tr>`;
         for (const item of caseData.items) {
-            html += `<tr><td>${item.name}</td><td><span class="rarity-badge rarity-${item.rarity}">${item.rarity}</span></td><td>${item.chance}%</td><td><button class="btn" style="padding:4px 12px;" onclick="showPreview('${item.name}', '${item.rarity}')">🔍</button></td></tr>`;
+            const chance = item.chance ? item.chance.toFixed(1) : (80 / caseData.items.length).toFixed(1);
+            html += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td><span class="rarity-badge rarity-${item.rarity}">${item.rarity}</span></td>
+                    <td>${chance}%</td>
+                    <td><button class="btn" style="padding:4px 12px;" onclick="showPreview('${item.name}', '${item.rarity}')">🔍</button></td>
+                </tr>
+            `;
         }
     }
     table.innerHTML = html;
@@ -824,11 +940,13 @@ function openCaseType(caseId) {
     saveGameData();
     updateUI();
     
-    const random = Math.random() * 100;
+    const totalChance = caseData.items.reduce((sum, item) => sum + (item.chance || (80 / caseData.items.length)), 0);
+    const random = Math.random() * totalChance;
     let accumulated = 0;
     let selectedItem = null;
     for (const item of caseData.items) {
-        accumulated += item.chance;
+        const itemChance = item.chance || (80 / caseData.items.length);
+        accumulated += itemChance;
         if (random <= accumulated) { selectedItem = item; break; }
     }
     if (!selectedItem) selectedItem = caseData.items[0];
@@ -843,7 +961,7 @@ function showRoulette(winItem, allItems) {
         else spinItems.push(allItems[Math.floor(Math.random() * allItems.length)]);
     }
     const container = document.getElementById('rouletteContainer');
-    container.innerHTML = spinItems.map(item => `<div style="width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-size:36px;">${item.name.includes("Перчатки") ? "🧤" : "🔫"}</div><div style="font-size:10px; color:${rarityColors[item.rarity]}">${item.name}</div></div>`).join('');
+    container.innerHTML = spinItems.map(item => `<div style="width:120px; display:flex; flex-direction:column; align-items:center; justify-content:center;"><div style="font-size:36px;">${item.icon || (item.name.includes("Перчатки") || item.name.includes("Gloves") ? "🧤" : "🗡️")}</div><div style="font-size:10px; color:${rarityColors[item.rarity]}">${item.name}</div></div>`).join('');
     const modal = document.getElementById('rouletteModal');
     modal.style.display = 'flex';
     setTimeout(() => container.style.transform = `translateX(${-(winIndex * 120 + 100)}px)`, 50);
@@ -853,7 +971,7 @@ function showRoulette(winItem, allItems) {
 function closeRoulette() {
     const winItem = window.pendingWinItem;
     if (winItem) {
-        game.skins.push({ name: winItem.name, rarity: winItem.rarity });
+        game.skins.push({ name: winItem.name, rarity: winItem.rarity, type: getWeaponType(winItem.name), icon: winItem.icon || (winItem.name.includes("Перчатки") || winItem.name.includes("Gloves") ? "🧤" : "🗡️") });
         saveGameData();
         updateUI();
         showToast(`🎉 Выпало: ${winItem.name}! 🎉`);
@@ -943,4 +1061,4 @@ style.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; }
 document.head.appendChild(style);
 </script>
 </body>
-                                                                                                                                                 </html>
+</html>
