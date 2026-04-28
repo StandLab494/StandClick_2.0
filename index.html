@@ -18,7 +18,6 @@
             overflow-x: hidden;
         }
         
-        /* ========== ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН ========== */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -54,7 +53,6 @@
             color: transparent;
             animation: gradientShift 3s ease infinite;
             letter-spacing: 5px;
-            text-shadow: 0 0 50px rgba(255,77,77,0.5);
         }
         
         @keyframes gradientShift {
@@ -68,10 +66,8 @@
             color: rgba(255,255,255,0.6);
             letter-spacing: 3px;
             margin-top: 10px;
-            text-transform: uppercase;
         }
         
-        /* Прогресс-бар */
         .loading-bar-container {
             width: 280px;
             height: 6px;
@@ -79,7 +75,6 @@
             border-radius: 10px;
             overflow: hidden;
             margin: 30px auto;
-            box-shadow: 0 0 10px rgba(255,77,77,0.3);
         }
         
         .loading-bar {
@@ -88,14 +83,12 @@
             background: linear-gradient(90deg, #ff4d4d, #ffd700);
             border-radius: 10px;
             transition: width 0.1s linear;
-            box-shadow: 0 0 15px #ff4d4d;
         }
         
         .loading-text {
             font-size: 14px;
             color: rgba(255,255,255,0.8);
             margin-top: 10px;
-            font-weight: 500;
         }
         
         .loading-timer {
@@ -103,7 +96,6 @@
             font-weight: bold;
             color: #ffd700;
             margin-top: 15px;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
         }
         
         .loading-tips {
@@ -121,7 +113,6 @@
             50% { opacity: 1; }
         }
         
-        /* Парящие частицы */
         .loading-particles {
             position: absolute;
             width: 100%;
@@ -179,7 +170,6 @@
         .mega-timer { font-size: 11px; color: #aaa; margin-top: 5px; }
 
         .btn { background: #ff4d4d; border: none; padding: 10px 20px; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; margin: 5px; transition: 0.2s; }
-        .btn:hover { transform: scale(1.02); }
         .btn-danger { background: #9f1239; }
         .card { background: rgba(15,23,42,0.8); border-radius: 20px; padding: 15px; margin: 15px auto; border: 1px solid rgba(255,77,77,0.2); max-width: 600px; backdrop-filter: blur(5px); }
         
@@ -225,7 +215,6 @@
 </head>
 <body>
 
-<!-- ЭПИЧНЫЙ ЗАГРУЗОЧНЫЙ ЭКРАН С ТАЙМЕРОМ -->
 <div class="loading-screen" id="loadingScreen">
     <div class="loading-particles" id="loadingParticles"></div>
     <div class="loading-logo">
@@ -340,9 +329,42 @@
         }
     };
     
-    const BUILTIN_PROMOS = {
-        "WELCOME2026":   { gold: 500,  skin: null, desc: "🔥 Приветственный бонус!" },
-        "BLOODUPDATE":   { gold: 1000, skin: "Перчатки (Красные)", desc: "🩸 Blood Update!" },
+    
+const BUILTIN_PROMOS = {
+    "FIX_GAME":   { gold: "random(1000, 50000)", skin: null, desc: "🔧 FIX_GAME — 1000-50000 G!" },
+    "Condensation": { gold: 0, skin: "M9 Forever", desc: "💎 Condensation — скин M9 Forever!" },
+};
+
+function getRandomGold(goldValue) {
+    if (typeof goldValue === 'string' && goldValue.startsWith('random(')) {
+        const match = goldValue.match(/random\((\d+),\s*(\d+)\)/);
+        if (match) {
+            const min = parseInt(match[1]);
+            const max = parseInt(match[2]);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    }
+    return goldValue;
+}
+
+window.claimPromo = function(code) {
+    if (game.usedPromos.includes(code)) { showToast("❌ Промокод уже активирован!"); return; }
+    const promo = BUILTIN_PROMOS[code];
+    if (!promo) return;
+    const goldAmount = getRandomGold(promo.gold);
+    game.gold += goldAmount;
+    if (promo.skin) {
+        game.skins.push({ name: promo.skin, rarity: "legendary" });
+        showToast(`🎁 Получен скин: ${promo.skin}!`);
+    }
+    if (goldAmount > 0) showToast(`💰 +${goldAmount.toLocaleString()} G!`);
+    game.usedPromos.push(code);
+    saveGameData();
+    updateUI();
+    renderPromos();
+    document.body.classList.add('mega-flash');
+    setTimeout(() => document.body.classList.remove('mega-flash'), 700);
+};
     };
     
     const rarityColors = {
@@ -383,8 +405,7 @@
         }
     };
     
-    // ========== ФЕЙК ЗАГРУЗКА С ТАЙМЕРОМ ==========
-    const LOADING_SECONDS = 10; // ← СЮДА ПИШИ СЕКУНДЫ: 10, 7, 15 и т.д.
+    const LOADING_SECONDS = 10;
     
     function createParticles() {
         const container = document.getElementById('loadingParticles');
@@ -406,13 +427,8 @@
         "💡 Открывай кейсы и получай легендарные скины!",
         "⚡ MEGA-клик даёт 1000 G раз в 5 часов!",
         "🎨 Скины увеличивают авто-доход!",
-        "👥 Добавляй друзей и соревнуйся!",
         "🔥 Легендарные скины выпадают с шансом 2-8%",
-        "💰 Кликай быстрее — зарабатывай больше!",
-        "🎁 Промокоды активируются на главном экране!",
-        "🔫 У каждого оружия свой скин-бонус!",
-        "📦 В кейсах есть предметы разной редкости",
-        "⭐ Battle Pass скоро появится!"
+        "💰 Кликай быстрее — зарабатывай больше!"
     ];
     
     let currentTip = 0;
@@ -446,11 +462,7 @@
             { progress: 100, text: "Вход в игру..." }
         ];
         
-        const totalSteps = loadingSteps.length;
-        let stepIndex = 0;
-        let currentProgress = 0;
         let secondsLeft = LOADING_SECONDS;
-        
         loadingTimer.textContent = secondsLeft;
         
         return new Promise((resolve) => {
@@ -458,15 +470,12 @@
                 secondsLeft--;
                 loadingTimer.textContent = secondsLeft;
                 
-                // Прогресс-бар в зависимости от времени
                 const targetProgress = ((LOADING_SECONDS - secondsLeft) / LOADING_SECONDS) * 100;
-                currentProgress = targetProgress;
-                loadingBar.style.width = currentProgress + '%';
+                loadingBar.style.width = targetProgress + '%';
                 
-                // Обновляем текст в зависимости от прогресса
-                const stepIndexByProgress = Math.floor((currentProgress / 100) * totalSteps);
-                if (stepIndexByProgress < totalSteps) {
-                    loadingText.textContent = loadingSteps[stepIndexByProgress].text + ' ' + Math.floor(currentProgress) + '%';
+                const stepIndex = Math.floor((targetProgress / 100) * loadingSteps.length);
+                if (stepIndex < loadingSteps.length) {
+                    loadingText.textContent = loadingSteps[stepIndex].text + ' ' + Math.floor(targetProgress) + '%';
                 }
                 
                 if (secondsLeft <= 0) {
@@ -481,11 +490,8 @@
     
     async function initGame() {
         await startFakeLoading();
-        
-        // Плавное исчезновение
         const loadingScreen = document.getElementById('loadingScreen');
         loadingScreen.style.opacity = '0';
-        
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             document.getElementById('mainContainer').style.display = 'block';
@@ -498,18 +504,6 @@
         renderChances();
         updateUI();
         loadGameData();
-        
-        // Онлайн счётчик
-        setInterval(() => {
-            let online = 30;
-            const now = Date.now();
-            gun.get('players_index').map().once((data, id) => {
-                if (id) gun.get('p_' + id).once(d => { if (d && d.lastSeen && now - d.lastSeen < 45000) online++; });
-            });
-            setTimeout(() => {
-                document.getElementById('onlineCounter').innerHTML = `🟢 ${online} игроков онлайн`;
-            }, 1000);
-        }, 15000);
     }
     
     function renderCases() {
@@ -528,7 +522,7 @@
     function renderChances() {
         const table = document.getElementById('chancesTable');
         if (!table) return;
-        let html = `<tr><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
+        let html = `<table><th>Предмет</th><th>Редкость</th><th>Шанс</th><th>Превью</th></tr>`;
         for (const [caseId, caseData] of Object.entries(CASES)) {
             html += `<tr style="background: rgba(255,77,77,0.1);"><td colspan="4" style="color: #ffd700; font-weight: bold;">${caseData.name}</td></tr>`;
             for (const item of caseData.items) {
@@ -588,7 +582,6 @@
         if (container) container.style.transform = '';
     }
     
-    // 3D Превью
     let previewScene, previewCamera, previewRenderer, previewModel;
     
     function showPreview(itemName, rarity) {
@@ -638,7 +631,6 @@
         if (previewModel) previewScene.remove(previewModel);
     }
     
-    // Основные функции
     function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
     
     function showToast(msg) {
@@ -713,7 +705,7 @@
         
         const skinsDiv = document.getElementById('skinsList');
         if (skinsDiv) {
-            skin3sDiv.innerHTML = game.skins.map((s, i) => `
+            skinsDiv.innerHTML = game.skins.map((s, i) => `
                 <div class="item-card" onclick="equipSkin(${i})">
                     <div style="font-size:28px;">${s.name.includes("Перчатки") ? "🧤" : "🔫"}</div>
                     <div>${s.name}</div>
@@ -856,7 +848,6 @@
     
     gun.get('server_maintenance').on(data => { document.getElementById('maintenanceScreen').style.display = data?.active ? 'flex' : 'none'; });
     
-    // ЗАПУСК ФЕЙК ЗАГРУЗКИ
     initGame();
     
     window.openCaseType = openCaseType;
@@ -867,10 +858,6 @@
     window.equipSkin = equipSkin;
     window.copyPlayerId = copyPlayerId;
     window.claimPromo = claimPromo;
-    
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `@keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }`;
-    document.head.appendChild(styleEl);
 </script>
 </body>
 </html>
