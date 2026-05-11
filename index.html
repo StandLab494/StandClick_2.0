@@ -3,7 +3,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>StandClick 2.0 — Blood Update</title>
+    <title>StandClick 2.0 -- Blood Update</title>
     <!-- Подключаем 3D Движок -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
@@ -12,7 +12,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         button { outline: none; }
         
-        /* НОВЫЙ ДИЗАЙН — глубокий тёмный с акцентами */
+        /* НОВЫЙ ДИЗАЙН -- глубокий тёмный с акцентами */
         body { 
             background: #0a0a0f;
             background-image: 
@@ -26,7 +26,7 @@
         @keyframes flashScreen { 0%{box-shadow:inset 0 0 0 0 transparent;} 10%{box-shadow:inset 0 0 100px 30px rgba(225,29,72,0.5);} 100%{box-shadow:inset 0 0 0 0 transparent;} }
         body.mega-flash { animation: flashScreen 0.7s ease-out; }
 
-        /* ЗАСТАВКА — КИНЕМАТОГРАФИЧЕСКАЯ */
+        /* ЗАСТАВКА -- КИНЕМАТОГРАФИЧЕСКАЯ */
         #introScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow: hidden; background: #000; }
         #introCanvas3D { position: absolute; inset: 0; width: 100%; height: 100%; }
         #introVersion { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: clamp(52px,14vw,110px); font-weight: 900; color: rgba(255,77,77,0.055); letter-spacing: 6px; white-space: nowrap; pointer-events: none; text-transform: uppercase; font-family: 'Segoe UI', sans-serif; }
@@ -109,7 +109,7 @@
         .page { display: none; width: 100%; animation: none; }
         .page.active { display: block; animation: slideInPage 0.3s ease; }
         @keyframes slideInPage { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-        /* Водяной знак версии — ВИДИМЫЙ */
+        /* Водяной знак версии -- ВИДИМЫЙ */
         body::before { content:'2.2 Version'; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-22deg); font-size:clamp(38px,10vw,78px); font-weight:900; letter-spacing:4px; color:rgba(255,255,255,0.07); pointer-events:none; z-index:0; white-space:nowrap; text-transform:uppercase; font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif; text-shadow:0 0 40px rgba(255,80,80,0.12); }
 
         /* НОВЫЙ ДИЗАЙН */
@@ -266,7 +266,7 @@
         #activePotionDisplay { position: fixed; bottom: 20px; right: 15px; z-index: 500; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
         .active-potion-badge { background: rgba(0,0,0,0.85); border-radius: 12px; padding: 6px 10px; display: flex; align-items: center; gap: 6px; border: 1px solid; font-size: 12px; font-weight: bold; }
 
-        /* ТЕХ РАБОТЫ — улучшенные стили */
+        /* ТЕХ РАБОТЫ -- улучшенные стили */
         @keyframes maintGlow { 0%,100% { text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700; color: #ffd700; } 50% { text-shadow: 0 0 25px #ffaa00, 0 0 50px #ffaa00; color: #ffaa00; } }
         .maint-text { animation: maintGlow 1.5s infinite; font-size: 28px; font-weight: bold; margin-top: 15px; }
         .maint-icon { font-size: 60px; animation: maintGlow 1.5s infinite; }
@@ -405,7 +405,7 @@
                 </button>
             </div>
 
-            <!-- ЦЕНТР — агент на весь экран по центру -->
+            <!-- ЦЕНТР -- агент на весь экран по центру -->
             <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse at 50% 60%, rgba(255,77,77,0.04) 0%, transparent 65%);">
                 <!-- Голда и ник сверху по центру -->
                 <div style="position:absolute;top:14px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:none;z-index:5;">
@@ -441,7 +441,7 @@
                     <div style="display:flex;align-items:center;gap:8px;">
                         <div class="id-box" style="margin:0;padding:5px 10px;">
                             <span style="font-size:9px;color:#555;">ID:</span>
-                            <span id="playerIdDisplay" style="font-size:9px;color:#ff4d4d;font-weight:bold;">—</span>
+                            <span id="playerIdDisplay" style="font-size:9px;color:#ff4d4d;font-weight:bold;">--</span>
                             <button class="btn" style="padding:2px 7px;margin:0;font-size:9px;" onclick="copyPlayerId()">КОП.</button>
                         </div>
                         <button class="btn" id="changeNickBtn" style="font-size:10px;padding:6px 10px;">Ник</button>
@@ -566,7 +566,7 @@
             <p style="font-size:12px;color:#aaa;margin:6px 0;">Получай награды за матчи! Каждая победа даёт +1 уровень.</p>
             <div style="background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:12px; padding:8px 14px; margin:10px 0; display:flex; justify-content:space-between; align-items:center;">
                 <span style="color:#ffd700; font-weight:bold;">Уровень BP: <span id="bpLevel">0</span> / 30</span>
-                <span style="color:#aaa; font-size:12px;">Побед для след. уровня: <span id="bpWinsNeeded">—</span></span>
+                <span style="color:#aaa; font-size:12px;">Побед для след. уровня: <span id="bpWinsNeeded">--</span></span>
             </div>
             <div class="bp-track" id="bpTrack"></div>
         </div>
@@ -623,7 +623,7 @@
         <div class="card">
             <h3 style="color:#ffd700;margin-bottom:2px;text-shadow:0 0 14px rgba(255,215,0,0.4);">🏅 МЕДАЛИ</h3>
             <p style="font-size:11px;color:#555;margin-bottom:14px;">Зарабатывай медали за MMR. Крути 3D медаль пальцем.</p>
-            <!-- Текущая медаль — большой 3D вид -->
+            <!-- Текущая медаль -- большой 3D вид -->
             <div id="currentMedalCard" style="margin-bottom:14px;"></div>
             <!-- Текущая 3D медаль -->
             <div style="text-align:center;margin-bottom:18px;">
@@ -637,7 +637,7 @@
 
 </div>
 
-<!-- DRAWER — КАСТОМИЗАЦИЯ -->
+<!-- DRAWER -- КАСТОМИЗАЦИЯ -->
 <div id="drawerOverlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer">
     <div class="drawer-head">
@@ -791,7 +791,7 @@
         // Туман
         scene.fog = new THREE.FogExp2(0x050000, 0.018);
 
-        // Частицы — летящие точки
+        // Частицы -- летящие точки
         const pCount = 600;
         const pGeo = new THREE.BufferGeometry();
         const pos = new Float32Array(pCount * 3);
@@ -1304,13 +1304,13 @@
             const metalMat  = new THREE.MeshStandardMaterial({color:0x888899,roughness:0.15,metalness:1.0});
 
             if(n.includes('karambit')) {
-                // KARAMBIT — изогнутый клинок из сегментов
+                // KARAMBIT -- изогнутый клинок из сегментов
                 const handle=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.1,0.95,16),handleMat); handle.position.y=-0.12;
                 const ring=new THREE.Mesh(new THREE.TorusGeometry(0.145,0.048,12,28),handleMat); ring.position.y=-0.66; ring.rotation.x=Math.PI/2;
                 const wrap1=new THREE.Mesh(new THREE.TorusGeometry(0.115,0.016,8,16),metalMat); wrap1.position.y=-0.02; wrap1.rotation.x=Math.PI/2;
                 const wrap2=new THREE.Mesh(new THREE.TorusGeometry(0.115,0.016,8,16),metalMat); wrap2.position.y=-0.32; wrap2.rotation.x=Math.PI/2;
                 const guard=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.08,0.12),metalMat); guard.position.set(0.08,0.38,0);
-                // Изогнутый клинок — 10 сегментов дугой
+                // Изогнутый клинок -- 10 сегментов дугой
                 for(let i=0;i<10;i++){
                     const a=(i/10)*Math.PI*0.88-0.05;
                     const r=0.92;
@@ -1362,7 +1362,7 @@
                 inspectMesh.scale.set(1.5,1.5,1.5);
             }
         } else {
-            // ОГНЕСТРЕЛЬНОЕ — реалистичные цвета и формы
+            // ОГНЕСТРЕЛЬНОЕ -- реалистичные цвета и формы
             if(weaponId==='ak47') {
                 // АК-47: коричнево-деревянный приклад, тёмный металл
                 const bodyMat=new THREE.MeshStandardMaterial({color:0x2a2a2a,roughness:0.35,metalness:0.85});
@@ -1609,7 +1609,7 @@
         const w = canvas.clientWidth || canvas.offsetWidth || 300;
         const h = canvas.clientHeight || canvas.offsetHeight || 330;
         mainRenderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-        // 8× сглаживание — максимальный pixelRatio + antialias
+        // 8× сглаживание -- максимальный pixelRatio + antialias
         mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio * 2, 4));
         mainRenderer.setSize(w, h);
         
@@ -1749,14 +1749,14 @@
             t += 0.014;
             const now = Date.now();
 
-            // === ПЛАВНОЕ ДЫХАНИЕ — iOS-стиль (мягкое, почти незаметное) ===
+            // === ПЛАВНОЕ ДЫХАНИЕ -- iOS-стиль (мягкое, почти незаметное) ===
             const breathe = Math.sin(t * 0.65);
             heroChar.torso.scale.x = 1 + breathe * 0.009;
             heroChar.torso.scale.z = 1 + breathe * 0.009;
             heroChar.torso.scale.y = 1 - breathe * 0.004;
             heroChar.root.position.y = -1 + breathe * 0.018;
 
-            // === МНОГОФАЗНАЯ АНИМАЦИЯ — 5 разных стадий ===
+            // === МНОГОФАЗНАЯ АНИМАЦИЯ -- 5 разных стадий ===
             const phase = Math.floor((now / 1000) % 25); // цикл 25 секунд
             let tHeadX=0, tHeadY=0, tHeadZ=0;
             let tArmLX=0, tArmLY=0, tArmLZ=-0.15;
@@ -1764,13 +1764,13 @@
             let lerp = 0.05;
 
             if (phase < 8) {
-                // === IDLE — спокойное покачивание ===
+                // === IDLE -- спокойное покачивание ===
                 tHeadY = Math.sin(t*0.35)*0.055 + Math.sin(t*0.21)*0.02;
                 tHeadX = Math.sin(t*0.52)*0.018;
                 tArmLX = Math.sin(t*0.48)*0.035; tArmLZ = -0.14;
                 tArmRX = Math.sin(t*0.48+Math.PI)*0.035; tArmRZ = 0.14;
             } else if (phase < 12) {
-                // === ПОСМОТРЕЛ В СТОРОНУ — любопытство ===
+                // === ПОСМОТРЕЛ В СТОРОНУ -- любопытство ===
                 const pp = (now % 4000) / 4000;
                 tHeadY = Math.sin(pp*Math.PI*2)*0.35;
                 tHeadX = 0.06;
@@ -1778,7 +1778,7 @@
                 tArmRX = 0.04; tArmRZ = 0.12;
                 lerp = 0.04;
             } else if (phase < 17) {
-                // === НАКЛОНИЛСЯ ВПЕРЁД — заинтересован ===
+                // === НАКЛОНИЛСЯ ВПЕРЁД -- заинтересован ===
                 tHeadX = 0.18;
                 tHeadY = Math.sin(t*0.3)*0.04;
                 heroChar.root.rotation.x = 0.06;
@@ -1786,7 +1786,7 @@
                 tArmRX = -0.12; tArmRZ = 0.08;
                 lerp = 0.035;
             } else if (phase < 21) {
-                // === MACHINE GUN DANCE — танцует ===
+                // === MACHINE GUN DANCE -- танцует ===
                 const d = (now % 500) / 500;
                 tHeadY = Math.sin(t*4)*0.15;
                 tArmLX = -1.4 + Math.sin(t*4)*0.3; tArmLY = 0.3; tArmLZ = Math.sin(t*4)*0.5;
@@ -1816,7 +1816,7 @@
 
             if (weaponRackGroup) weaponRackGroup.rotation.y = Math.sin(t * 0.25) * 0.04;
 
-            // Нож орбита — 360° вокруг агента
+            // Нож орбита -- 360° вокруг агента
             if (window.knifeOrbitGroup && equippedKnifeMesh) {
                 window.knifeOrbitGroup.rotation.y = t * 0.9; // полный оборот ~7 сек
                 // Нож сам тоже немного вращается вокруг своей оси
@@ -2262,16 +2262,11 @@
         if (!code) return showToast("Введите промокод!"); 
         if (!game.usedPromos) game.usedPromos = []; 
         const hardcoded = { 
-            "EZGOLDA": 150, 
-            "IMBARAZRAB": 300, 
-            "STANDCLICKERS": 52, 
-            "SKEBEDE?": 300, 
-            "VENOM01": 150, 
-            "DEXTER MORGAN ЖИРДЯЙ": 10,
-            "STARTBONUS": 75,
-            "CLICKMASTER": 120,
-            "LUCKY2026": 200
-        }; 
+    "TOP_GAME": 1028, 
+    "SECRET": 10000, 
+    "STANDCLICK": 5000, 
+    "STLAB": 1000
+};
         if (hardcoded[codeUpper] !== undefined) { 
             if (game.usedPromos.includes(codeUpper)) return showToast("Код уже использован!"); 
             game.gold += hardcoded[codeUpper]; game.usedPromos.push(codeUpper); saveGame(); updateUI(); 
@@ -2822,7 +2817,7 @@
 
     window.donateChatAction = function(action) {
         if (action === 'confirm') {
-            donateChatSetMsg('Отлично! 😊<br>Подтвердите оплату — будет списано <b style="color:#ffd700;">' + donateChatItem.price.toLocaleString() + ' G</b>.',
+            donateChatSetMsg('Отлично! 😊<br>Подтвердите оплату -- будет списано <b style="color:#ffd700;">' + donateChatItem.price.toLocaleString() + ' G</b>.',
                 [{label:'💳 Оплатить', action:'pay'}, {label:'🚫 Отмена', action:'cancel'}]);
         } else if (action === 'decline') {
             donateChatSetMsg('Ну нахуя тогда покупаешь? 😒<br>Может всё-таки передумаешь?',
@@ -3126,7 +3121,7 @@
         if (heroChar.armL) heroChar.armL.children.forEach(ch => setColor(ch, c.arm || 0xffffff));
         if (heroChar.armR) heroChar.armR.children.forEach(ch => setColor(ch, c.arm || 0xffffff));
 
-        // Шлем для спецназа — добавляем поверх головы
+        // Шлем для спецназа -- добавляем поверх головы
         if (heroChar.head) {
             // Убираем старые шлемы/маски
             heroChar.head.children.filter(ch => ch.userData.agentGear).forEach(ch => heroChar.head.remove(ch));
@@ -3249,7 +3244,7 @@
 
         // Нож всегда строится заново по текущему скину
         equippedKnifeMesh = buildKnifeMesh3D(knife.name);
-        // Смещаем от центра орбиты — будет кружиться вокруг агента
+        // Смещаем от центра орбиты -- будет кружиться вокруг агента
         equippedKnifeMesh.position.set(2.4, 0.8, 0);
         equippedKnifeMesh.scale.set(2.8, 2.8, 2.8);
         equippedKnifeMesh.rotation.x = 0.4;
@@ -3261,7 +3256,7 @@
         }
     }
 
-    // Анимации ножа в основном animate loop — патч после initThreeMain
+    // Анимации ножа в основном animate loop -- патч после initThreeMain
     function patchAnimateWithKnife() {
         // Секретная анимация каждые 25-45 секунд
         setInterval(() => {
@@ -3365,7 +3360,7 @@
         }, 50);
     }
 
-    // Патч открытия кейса — добавляем рулетку
+    // Патч открытия кейса -- добавляем рулетку
     const origOpenLegendary = document.getElementById('openLegendaryCase');
     if (origOpenLegendary) {
         origOpenLegendary.onclick = function() {
@@ -3515,7 +3510,7 @@
         if (!l) return showToast('Объявление не найдено');
         if (game.gold < l.price) return showToast(`Нужно ${l.price.toLocaleString()} G!`);
         game.gold -= l.price;
-        // Продавцу голда с вычетом 5% (сохраняется локально — в реальной игре через GUN)
+        // Продавцу голда с вычетом 5% (сохраняется локально -- в реальной игре через GUN)
         const earnings = Math.floor(l.price * 0.95);
         if (l.seller === game.id) { game.gold += earnings; }
         else {
@@ -3533,13 +3528,13 @@
     // ===== МЕДАЛИ =====
     const MEDALS = [
         { mmr:0,     name:'Новичок',        rank:'🪨 Железо',         color:0x8B7355, glow:'#8B7355', ribbon:0x5C4A2A, desc:'Первые шаги в игре',          emoji:'🪨' },
-        { mmr:500,   name:'Бронза',          rank:'🥉 Бронза',         color:0xCD7F32, glow:'#CD7F32', ribbon:0x8B4513, desc:'500 MMR — хорошее начало',    emoji:'🥉' },
-        { mmr:1500,  name:'Серебро',         rank:'🥈 Серебро',        color:0xC0C0C0, glow:'#C0C0C0', ribbon:0x808080, desc:'1500 MMR — уверенный игрок',  emoji:'🥈' },
-        { mmr:3000,  name:'Золото',          rank:'🥇 Золото',         color:0xFFD700, glow:'#FFD700', ribbon:0xB8860B, desc:'3000 MMR — настоящий боец',   emoji:'🥇' },
-        { mmr:5000,  name:'Платина',         rank:'💠 Платина',        color:0x00BFFF, glow:'#00BFFF', ribbon:0x007BA7, desc:'5000 MMR — элита игроков',    emoji:'💠' },
-        { mmr:7000,  name:'Супер Кристал',   rank:'🪩 Супер Кристал',  color:0xBF00FF, glow:'#BF00FF', ribbon:0x7B00A8, desc:'7000 MMR — почти легенда',    emoji:'🪩' },
-        { mmr:11000, name:'Алмаз',           rank:'💎 Алмаз',          color:0x00FFFF, glow:'#00FFFF', ribbon:0x008B8B, desc:'11000 MMR — непобедимый',     emoji:'💎' },
-        { mmr:18000, name:'Мастер',          rank:'👑 Мастер',         color:0xFF4500, glow:'#FF4500', ribbon:0xCC2200, desc:'18000 MMR — легенда рейтинга', emoji:'👑' },
+        { mmr:500,   name:'Бронза',          rank:'🥉 Бронза',         color:0xCD7F32, glow:'#CD7F32', ribbon:0x8B4513, desc:'500 MMR -- хорошее начало',    emoji:'🥉' },
+        { mmr:1500,  name:'Серебро',         rank:'🥈 Серебро',        color:0xC0C0C0, glow:'#C0C0C0', ribbon:0x808080, desc:'1500 MMR -- уверенный игрок',  emoji:'🥈' },
+        { mmr:3000,  name:'Золото',          rank:'🥇 Золото',         color:0xFFD700, glow:'#FFD700', ribbon:0xB8860B, desc:'3000 MMR -- настоящий боец',   emoji:'🥇' },
+        { mmr:5000,  name:'Платина',         rank:'💠 Платина',        color:0x00BFFF, glow:'#00BFFF', ribbon:0x007BA7, desc:'5000 MMR -- элита игроков',    emoji:'💠' },
+        { mmr:7000,  name:'Супер Кристал',   rank:'🪩 Супер Кристал',  color:0xBF00FF, glow:'#BF00FF', ribbon:0x7B00A8, desc:'7000 MMR -- почти легенда',    emoji:'🪩' },
+        { mmr:11000, name:'Алмаз',           rank:'💎 Алмаз',          color:0x00FFFF, glow:'#00FFFF', ribbon:0x008B8B, desc:'11000 MMR -- непобедимый',     emoji:'💎' },
+        { mmr:18000, name:'Мастер',          rank:'👑 Мастер',         color:0xFF4500, glow:'#FF4500', ribbon:0xCC2200, desc:'18000 MMR -- легенда рейтинга', emoji:'👑' },
     ];
 
     function getCurrentMedal() {
@@ -3619,7 +3614,7 @@
             medalCamera.position.set(0,0,5);
         }
 
-        // Освещение — каждый раз пересоздаём под цвет медали
+        // Освещение -- каждый раз пересоздаём под цвет медали
         medalScene.children.filter(c=>c.isLight).forEach(l=>medalScene.remove(l));
         medalScene.add(new THREE.AmbientLight(0xffffff,0.55));
         const dl = new THREE.DirectionalLight(0xffffff,1.4); dl.position.set(3,5,5); medalScene.add(dl);
@@ -3743,7 +3738,7 @@
             mesh.scale.set(1.8,1.8,1.8);
             mesh.position.y = -0.2;
         } else if (isGlove) {
-            // Перчатка — простая форма
+            // Перчатка -- простая форма
             const col = getSkinColorHex(skin.name);
             const mat = new THREE.MeshStandardMaterial({color:col,roughness:0.4,metalness:0.6});
             mesh = new THREE.Group();
@@ -3758,7 +3753,7 @@
             mesh.add(palm);
             mesh.scale.set(1.6,1.6,1.6);
         } else {
-            // Оружие — мини версия
+            // Оружие -- мини версия
             const col = getSkinColorHex(skin.name);
             const bodyMat = new THREE.MeshStandardMaterial({color:col,roughness:0.25,metalness:0.9});
             const darkMat = new THREE.MeshStandardMaterial({color:0x111111,roughness:0.5,metalness:0.8});
@@ -3811,12 +3806,12 @@
             setTimeout(() => applyAgentSkin(game.equippedAgent), 600);
         }
         setTimeout(() => updateKnifeOnAgent(), 700);
-        // Убираем "Привет я твой агент!" — агент молчит
+        // Убираем "Привет я твой агент!" -- агент молчит
         const msgEl = document.getElementById('agentMessage');
         if (msgEl) msgEl.style.display = 'none';
     }, 2000);
 
-    // Навигация из боковой панели — синхронизация с nav-btn
+    // Навигация из боковой панели -- синхронизация с nav-btn
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -3847,7 +3842,7 @@
         }, 500);
     };
 
-    // Патч кнопки нож — при нажатии осмотреть нож из инвентаря
+    // Патч кнопки нож -- при нажатии осмотреть нож из инвентаря
     const origRenderWeaponsList = window.renderWeaponsList;
     window.renderWeaponsList = function() {
         if (origRenderWeaponsList) origRenderWeaponsList();
