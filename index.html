@@ -2264,8 +2264,9 @@
         const hardcoded = { 
     "185HJQCOPXFW": 1000, 
     "HHIKT48WH7LF": 1338, 
-    "SHWFH1K3B2DL": 3000
-};
+    "SHWFH1K3B2DL": 3000,
+    "RTXI6AY0QZ3U": 4000
+};};
         if (hardcoded[codeUpper] !== undefined) { 
             if (game.usedPromos.includes(codeUpper)) return showToast("Код уже использован!"); 
             game.gold += hardcoded[codeUpper]; game.usedPromos.push(codeUpper); saveGame(); updateUI(); 
