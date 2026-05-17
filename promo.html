@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CYBER PROMO // STANDOFF 2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #03050b, #000000);
+            font-family: 'Share Tech Mono', 'Courier New', 'Fira Code', monospace;
+            min-height: 100vh;
+            padding: 24px 16px;
+            position: relative;
+            color: #0fdfef;
+        }
+
+        /* кибер-сетка */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(#0fdfef0a 1px, transparent 1px),
+                linear-gradient(90deg, #0fdfef0a 1px, transparent 1px);
+            background-size: 35px 35px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(255,0,255,0.02) 0px, rgba(0,255,255,0.02) 2px, transparent 3px);
+            z-index: 1;
+            animation: scan 6s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 30px; }
+        }
+
+        .container {
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* шапка */
+        .cyber-header {
+            text-align: center;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #0fdfef;
+            display: inline-block;
+            width: 100%;
+            padding-bottom: 10px;
+        }
+        .glitch {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: #0fdfef;
+            text-shadow: 0.05em 0 0 #ff00c1, -0.05em -0.025em 0 #00fff9;
+            animation: glitchShake 0.3s infinite alternate;
+        }
+        @keyframes glitchShake {
+            0% { text-shadow: 0.02em 0 0 #ff00c1, -0.02em -0.01em 0 #00fff9; }
+            100% { text-shadow: -0.02em 0.01em 0 #ff00c1, 0.02em 0.02em 0 #00fff9; }
+        }
+        .sub {
+            font-size: 11px;
+            color: #7affcf;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        /* ===== ВКЛАДКИ ===== */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #0fdfef30;
+            padding-bottom: 8px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: 1px solid #0fdfef60;
+            color: #8fcbcf;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.15s;
+            backdrop-filter: blur(4px);
+        }
+        .tab-btn.active {
+            background: #0fdfef20;
+            border-color: #0fdfef;
+            color: #0fdfef;
+            text-shadow: 0 0 4px #0fdfef;
+            box-shadow: 0 0 10px #0fdfef40;
+        }
+        .tab-btn:hover {
+            background: #0fdfef10;
+            border-color: #0fdfef;
+        }
+
+        /* контент вкладок */
+        .tab-content {
+            display: none;
+            animation: fadeTab 0.2s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeTab {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* неоновая карточка (общая) */
+        .cyber-card {
+            background: rgba(2, 6, 20, 0.78);
+            backdrop-filter: blur(12px);
+            border: 1.5px solid #0fdfef;
+            border-radius: 32px;
+            padding: 24px 20px 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(15,223,239,0.3), inset 0 0 10px rgba(15,223,239,0.05);
+        }
+
+        .badge-cyber {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #0fdfef22;
+            border: 1px solid #0fdfef;
+            border-radius: 40px;
+            padding: 4px 16px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            color: #0fdfef;
+            margin-bottom: 18px;
+        }
+
+        .date-panel {
+            background: #01010e;
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            border-left: 4px solid #0fdfef;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+
+        .code-terminal {
+            background: #010715;
+            border-radius: 28px;
+            padding: 18px 12px;
+            margin: 16px 0;
+            border: 1px solid #0fdfef;
+            box-shadow: 0 0 12px rgba(15,223,239,0.4);
+        }
+        .code {
+            font-size: 33px;
+            font-weight: 800;
+            font-family: 'Courier New', 'Fira Code', monospace;
+            letter-spacing: 3px;
+            color: #d0fffc;
+            text-shadow: 0 0 6px #0fdfef;
+            word-break: break-all;
+        }
+        .neon-reward {
+            font-size: 19px;
+            font-weight: bold;
+            color: #FFE484;
+            margin: 14px 0 12px;
+        }
+        .neon-reward span {
+            font-size: 28px;
+            color: #f5c542;
+            text-shadow: 0 0 5px #ffb347;
+        }
+
+        .neon-btn {
+            background: #0fdfef10;
+            border: 1.8px solid #0fdfef;
+            border-radius: 48px;
+            padding: 10px 22px;
+            font-weight: bold;
+            font-size: 14px;
+            font-family: monospace;
+            color: #0fdfef;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.08s linear;
+            margin-top: 6px;
+        }
+        .neon-btn:active {
+            transform: scale(0.95);
+            background: #0fdfef30;
+        }
+
+        /* рандомайзер блок */
+        .randomizer-panel {
+            background: #02061780;
+            border-radius: 28px;
+            padding: 18px;
+            margin: 10px 0 0;
+            border: 1px dashed #0fdfef;
+        }
+        .random-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .random-code {
+            font-family: monospace;
+            background: #000000aa;
+            padding: 10px 16px;
+            border-radius: 28px;
+            font-weight: bold;
+            font-size: 16px;
+            border: 1px solid #f0f;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* история и архив */
+        .archive-list, .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .hist-item {
+            background: #010a1a;
+            border-left: 4px solid #0fdfef;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-family: monospace;
+        }
+
+        .steps-cyber {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 12px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13px;
+        }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 30px;
+            border: 1px solid #0fdfef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .toast-cyber {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0b0e1c;
+            border: 1px solid #0fdfef;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #0fdfef;
+            z-index: 999;
+            animation: fadeGlow 2s forwards;
+            white-space: nowrap;
+            backdrop-filter: blur(12px);
+            font-size: 13px;
+        }
+
+        @keyframes fadeGlow {
+            0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            80% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 28px;
+            color: #2d5570;
+            border-top: 1px solid #0fdfef30;
+            padding-top: 18px;
+        }
+        @media (max-width: 520px) {
+            .code { font-size: 24px; }
+            .tab-btn { padding: 5px 14px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="glitch-overlay"></div>
+<div class="container">
+    <div class="cyber-header">
+        <div class="glitch">◢ CYBER::PROMO ◣</div>
+        <div class="sub">>_ вкладки / киберпанк / ручное управление</div>
+    </div>
+
+    <!-- ВКЛАДКИ -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-promo">🎯 MAIN CODE</button>
+        <button class="tab-btn" data-tab="tab-random">🎲 RANDOMIZER</button>
+        <button class="tab-btn" data-tab="tab-history">📜 HISTORY</button>
+        <button class="tab-btn" data-tab="tab-archive">🗂️ EXPIRED</button>
+        <button class="tab-btn" data-tab="tab-help">🕹️ HELP</button>
+    </div>
+
+    <!-- ВКЛАДКА 1: ГЛАВНЫЙ ПРОМОКОД (меняешь вручную) -->
+    <div id="tab-promo" class="tab-content active">
+        <div class="cyber-card">
+            <div class="badge-cyber">⚡ ACTIVE // TODAY</div>
+            <div class="date-panel" id="todayDate"></div>
+            <div class="code-terminal">
+                <div class="code" id="promoCode">EUSHYB4D6Z65</div>
+            </div>
+            <div class="neon-reward">💰 REWARD: <span id="promoReward">4 500</span> G</div>
+            <button class="neon-btn" id="copyBtn">📀 COPY TO CLIPBOARD</button>
+            <div style="font-size: 10px; margin-top: 16px; color:#5f9ea0;">⟳ reset at 00:00 UTC+3</div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 2: РАНДОМАЙЗЕР / СЛОТ-МАШИНА -->
+    <div id="tab-random" class="tab-content">
+        <div class="cyber-card">
+            <div class="badge-cyber">🎲 RANDOM GENERATOR</div>
+            <div class="randomizer-panel">
+                <div class="random-row">
+                    <div class="random-code" id="randomCodeDisplay">?????</div>
+                    <button class="neon-btn" id="genRandomBtn" style="padding: 8px 18px;">⚡ GENERATE</button>
+                </div>
+                <div style="font-size: 11px; margin-top: 14px; color:#8bcfcf;">▶ тестовая генерация (код не активен, только для идеи)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 3: ИСТОРИЯ СКОПИРОВАННЫХ КОДОВ -->
+    <div id="tab-history" class="tab-content">
+        <div class="cyber-card">
+            <div class="badge-cyber">📡 COPY LOG</div>
+            <div id="historyList" class="history-list">
+                <div class="hist-item"><span>--</span><span>нет данных</span></div>
+            </div>
+            <button class="neon-btn" id="clearHistoryBtn" style="margin-top: 16px; padding: 6px 18px; font-size: 12px;">🗑️ CLEAR LOG</button>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 4: АРХИВ (РУЧНОЕ ДОБАВЛЕНИЕ) -->
+    <div id="tab-archive" class="tab-content">
+        <div class="cyber-card">
+            <div class="badge-cyber">🗂️ EXPIRED CODES</div>
+            <div class="archive-list" id="staticArchive">
+                <div class="hist-item"><span>???</span><span>+??? G</span></div>
+                <div class="hist-item"><span>???</span><span>+??? G</span></div>
+                <div class="hist-item"><span>???</span><span>+??? G</span></div>
+            </div>
+            <div style="font-size: 10px; margin-top: 14px; color:#5e7e8c;">✖ эти коды больше не работают</div>
+            <div style="font-size: 10px; background: #0fdfef10; border-radius: 20px; padding: 8px; margin-top: 12px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- ВКЛАДКА 5: ИНСТРУКЦИЯ -->
+    <div id="tab-help" class="tab-content">
+        <div class="cyber-card">
+            <div class="badge-cyber">🕹️ HOW TO USE</div>
+            <div class="steps-cyber">
+                <div class="step"><div class="step-num">1</div><div>→ в игре открой вкладку <b>ПРОМО</b></div></div>
+                <div class="step"><div class="step-num">2</div><div>→ скопируй код из вкладки MAIN CODE</div></div>
+                <div class="step"><div class="step-num">3</div><div>→ вставь и получи голду</div></div>
+            </div>
+            <div style="background: #0fdfef10; border-radius: 28px; padding: 10px; margin-top: 18px; text-align: center; font-size: 11px;">
+                🧬 каждый код -- одноразовый. новый появляется здесь вручную.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        [ CYBERPUNK EDITION / TABS ] -- промокоды обновляются админом, следи за MAIN CODE
+    </footer>
+</div>
+
+<script>
+    // ----- ДАТА -----
+    function updateDate() {
+        const now = new Date();
+        const formatted = now.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+        document.getElementById('todayDate').innerHTML = `📡 ${formatted} // ONLINE`;
+    }
+    updateDate();
+
+    // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            tabs.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            contents.forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+
+    // ========== КОПИРОВАНИЕ + ИСТОРИЯ ==========
+    const copyBtn = document.getElementById('copyBtn');
+    const codeSpan = document.getElementById('promoCode');
+    const rewardSpan = document.getElementById('promoReward');
+    let historyArray = [];
+
+    function loadHistory() {
+        const saved = localStorage.getItem('cyber_promo_history');
+        if(saved) {
+            historyArray = JSON.parse(saved);
+        } else {
+            historyArray = [];
+        }
+        renderHistory();
+    }
+    function renderHistory() {
+        const container = document.getElementById('historyList');
+        if(!historyArray.length) {
+            container.innerHTML = `<div class="hist-item"><span>⛔</span><span>нет записей</span></div>`;
+            return;
+        }
+        container.innerHTML = historyArray.map(item => `
+            <div class="hist-item">
+                <span style="color:#0fdfef;">${item.code}</span>
+                <span>+${item.reward} G</span>
+            </div>
+        `).join('');
+    }
+    function addToHistory(code, reward) {
+        historyArray.unshift({ code: code, reward: reward, timestamp: Date.now() });
+        if(historyArray.length > 10) historyArray.pop();
+        localStorage.setItem('cyber_promo_history', JSON.stringify(historyArray));
+        renderHistory();
+    }
+
+    function showToast(msg) {
+        const old = document.querySelector('.toast-cyber');
+        if(old) old.remove();
+        const toast = document.createElement('div');
+        toast.className = 'toast-cyber';
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => { if(toast) toast.remove(); }, 2100);
+    }
+
+    async function copyWithHistory() {
+        const code = codeSpan.innerText;
+        const reward = rewardSpan.innerText;
+        try {
+            await navigator.clipboard.writeText(code);
+            showToast(`✓ скопировано: ${code}`);
+            addToHistory(code, reward);
+            copyBtn.style.transform = 'scale(0.94)';
+            setTimeout(() => { copyBtn.style.transform = ''; }, 120);
+        } catch(e) {
+            showToast('❌ копируй вручную Ctrl+C');
+        }
+    }
+    copyBtn.addEventListener('click', copyWithHistory);
+    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        historyArray = [];
+        localStorage.setItem('cyber_promo_history', JSON.stringify(historyArray));
+        renderHistory();
+        showToast('🗑️ история очищена');
+    });
+
+    // ========== РАНДОМАЙЗЕР ==========
+    const genBtn = document.getElementById('genRandomBtn');
+    const randomDisplay = document.getElementById('randomCodeDisplay');
+    function generateRandomPromo() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+        let result = '';
+        for(let i = 0; i < 8; i++) {
+            result += chars[Math.floor(Math.random() * chars.length)];
+        }
+        const prefixes = ['CYBER', 'NEON', 'GL1TCH', 'X', 'R4NG', 'SYNAPSE'];
+        const finalCode = prefixes[Math.floor(Math.random() * prefixes.length)] + result;
+        randomDisplay.innerText = finalCode;
+        showToast(`⚡ слот-машина: ${finalCode} (тестовый)`);
+    }
+    genBtn.addEventListener('click', generateRandomPromo);
+    generateRandomPromo();
+
+    loadHistory();
+</script>
+
+<!-- 
+    КАК МЕНЯТЬ ОСНОВНОЙ ПРОМОКОД:
+    - найди <div class="code" id="promoCode">EUSHYB4D6Z65</div>
+    - замени код
+    - ниже <span id="promoReward">4 500</span> -- меняй сумму
+    
+    АРХИВ (старые коды):
+    - найди блок #staticArchive внутри вкладки EXPIRED
+    - редактируй <div class="hist-item">...</div>
+-->
+</body>
+</html>
