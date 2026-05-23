@@ -2,1201 +2,268 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Standoff 2 — Полная версия</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Сервера выключены</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: linear-gradient(135deg, #0a0a0c 0%, #1a1a2e 100%);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: white;
+            background: #050505;
             min-height: 100vh;
-            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
             position: relative;
+            overflow: hidden;
+        }
+
+        /* Красное свечение по краям */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(255,0,0,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Анимация пульсации */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px #ff0000; }
+            100% { text-shadow: 0 0 25px #ff0000, 0 0 35px #ff0000; }
         }
 
         .container {
-            max-width: 500px;
-            margin: 0 auto;
             text-align: center;
+            padding: 30px;
+            z-index: 10;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        /* 3D контейнер */
-        .canvas-container {
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-        #heroCanvas {
-            width: 100%;
-            height: 280px;
-            display: block;
-            background: radial-gradient(circle, #1a1a2e, #0a0a0c);
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
-        .gold {
-            font-size: 42px;
-            font-weight: bold;
-            color: #ffcc00;
-            text-shadow: 0 0 15px rgba(255,204,0,0.5);
-        }
-
-        .nick {
-            font-size: 18px;
-            color: #aaa;
-            margin: 5px 0;
-        }
-
-        .online-counter {
-            background: rgba(0,0,0,0.5);
-            border-radius: 30px;
-            padding: 5px 15px;
-            display: inline-block;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-
-        .click-btn {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ffcc00, #ff8800);
-            border: none;
-            color: #000;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 25px rgba(255,204,0,0.4);
-            margin: 20px auto;
-            transition: transform 0.05s;
-        }
-        .click-btn:active { transform: scale(0.96); }
-
-        .mega-click {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #9b59b6, #8e44ad);
-            border: 2px solid #ffcc00;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            margin-left: 15px;
-        }
-        .mega-click.disabled { opacity: 0.5; pointer-events: none; }
-
-        .btn {
-            background: #ffcc00;
-            color: #000;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 5px;
-        }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn-purple { background: linear-gradient(135deg,#9b59b6,#8e44ad); color: white; }
-
-        .card {
-            background: rgba(15, 23, 42, 0.7);
-            border-radius: 20px;
-            padding: 15px;
-            margin: 15px 0;
-            border: 1px solid rgba(255,204,0,0.2);
-        }
-
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 10px;
-            max-height: 350px;
-            overflow-y: auto;
-        }
-
-        .item-card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            border-left: 3px solid #ffcc00;
-        }
-
-        .nav {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .nav-btn {
-            background: #1e293b;
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .nav-btn.active { background: #ffcc00; color: #000; }
-
-        .page { display: none; }
-        .page.active { display: block; }
-
-        .promo-input { display: flex; gap: 10px; margin-top: 10px; }
-        .promo-input input {
-            flex: 1;
-            background: #1e293b;
-            border: 1px solid #ffcc00;
-            padding: 10px;
-            border-radius: 30px;
-            color: white;
-            text-align: center;
-        }
-
-        .weapon-card {
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 12px;
-            margin: 8px 0;
-            border-left: 4px solid #ffcc00;
-        }
-
-        .id-box {
-            background: rgba(0,0,0,0.4);
-            border-radius: 14px;
-            padding: 10px 14px;
-            margin-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #ffcc00;
-            gap: 8px;
-        }
-        #playerIdDisplay { font-size: 13px; color: #ffcc00; font-weight: bold; flex: 1; }
-
-        /* Battle Pass */
-        .bp-track {
-            display: flex;
-            overflow-x: auto;
-            gap: 8px;
-            padding: 10px 0;
-        }
-        .bp-step {
-            min-width: 70px;
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 8px;
-            text-align: center;
-            border: 2px solid #334155;
-            flex-shrink: 0;
-        }
-        .bp-step.claimed { border-color: #ffd700; background: rgba(255,215,0,0.1); }
-        .bp-step.available { border-color: #ff4d4d; animation: bpGlow 1.5s infinite alternate; }
-        @keyframes bpGlow { from { box-shadow: 0 0 5px #ff4d4d; } to { box-shadow: 0 0 15px #ff4d4d; } }
-        .bp-claim-btn { background: #ff4d4d; border: none; color: #fff; border-radius: 8px; padding: 4px 8px; font-size: 10px; cursor: pointer; margin-top: 5px; }
-
-        /* Зелья */
-        .potion-card {
-            background: #1e293b;
-            border-radius: 16px;
-            padding: 12px;
-            margin: 8px 0;
-            border-left: 4px solid #ff4d4d;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .red-potion { border-left-color: #ef4444; }
-        .green-potion { border-left-color: #10b981; }
-        .potion-icon { font-size: 32px; }
-
-        /* 2D игра */
-        .game-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0c;
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-        .game-modal.active { display: flex; }
-        .game-canvas-container { flex: 1; position: relative; background: #1a1a2e; overflow: hidden; }
-        #gameCanvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            background: linear-gradient(135deg, #1a472a, #0a2a1a);
-            cursor: none;
-        }
-        .game-controls {
-            padding: 15px;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .joystick-area {
-            width: 100px;
-            height: 100px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50px;
-            position: relative;
-            touch-action: none;
-        }
-        .joystick-thumb {
-            width: 40px;
-            height: 40px;
-            background: #ffcc00;
-            border-radius: 20px;
+        /* Красный экран-заставка */
+        .red-screen {
             position: absolute;
-            top: 30px;
-            left: 30px;
-            transition: transform 0.02s;
+            inset: 0;
+            background: #8B0000;
+            opacity: 0;
+            animation: redFlash 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 20;
         }
-        .shoot-btn {
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle at 30% 30%, #dc2626, #991b1b);
-            border-radius: 35px;
-            border: 2px solid #ffcc00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-        }
-        .close-game { background: #dc2626; padding: 8px 16px; border-radius: 20px; cursor: pointer; }
 
-        @keyframes fadeOut {
-            0%,70% { opacity: 1; }
+        @keyframes redFlash {
+            0% { opacity: 0; }
+            20% { opacity: 0.6; }
             100% { opacity: 0; }
         }
+
+        .icon {
+            font-size: 120px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite, glow 1.5s infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(255,0,0,0.5));
+        }
+
+        h1 {
+            font-size: clamp(32px, 8vw, 52px);
+            font-weight: 900;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            animation: blink 1.5s infinite;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .message {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+            max-width: 350px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Кнопка попробовать снова */
+        .retry-btn {
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #8B0000, #4a0000);
+            border: 2px solid #ff0000;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .retry-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #aa0000, #6a0000);
+            box-shadow: 0 0 20px rgba(255,0,0,0.4);
+        }
+
+        .retry-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Статус сервера */
+        .server-status {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .red-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+            box-shadow: 0 0 8px #ff0000;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Ошибка */
+        .error-code {
+            margin-top: 20px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            font-family: monospace;
+        }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-
-<div class="container">
-    <div class="nav">
-        <button class="nav-btn active" data-page="main">🎯</button>
-        <button class="nav-btn" data-page="weapons">🔫</button>
-        <button class="nav-btn" data-page="inventory">📦</button>
-        <button class="nav-btn" data-page="craft">🔨</button>
-        <button class="nav-btn" data-page="shop">🎁</button>
-        <button class="nav-btn" data-page="battlepass">⭐</button>
-        <button class="nav-btn" data-page="potions">🧪</button>
-        <button class="nav-btn" data-page="promo">🔑</button>
-    </div>
-
-    <!-- ГЛАВНАЯ СТРАНИЦА -->
-    <div id="page-main" class="page active">
-        <div class="online-counter" id="onlineCounter">🟢 12 игроков онлайн</div>
-        <div class="gold" id="gold">0 G</div>
-        <div class="nick" id="nick">Игрок</div>
-        <div class="nick" id="rank">🥉 Silver I</div>
-        <div id="skinBonusDisplay" style="font-size:12px;color:#ffaa00;">🎨 Бонус: +0% голда</div>
-        
-        <!-- 3D Агент -->
-        <div class="canvas-container">
-            <canvas id="heroCanvas"></canvas>
+    <div class="red-screen"></div>
+    
+    <div class="container">
+        <div class="icon">
+            💀⚠️💀
         </div>
         
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-            <button class="click-btn" id="clickBtn">CLICK</button>
-            <div class="mega-click" id="megaClickBtn">
-                ⚡<br>
-                <span id="megaTimer">Готово</span>
-            </div>
+        <h1>СЕРВЕРА ВЫКЛЮЧЕНЫ</h1>
+        
+        <div class="subtitle">
+            ДОСТУП ЗАКРЫТ
         </div>
         
-        <div class="card">
-            <div class="id-box">
-                <span>🆔 ID:</span>
-                <span id="playerIdDisplay">—</span>
-                <button class="btn" style="padding:5px 12px;margin:0;" onclick="copyPlayerId()">📋</button>
-            </div>
-            <div style="margin-top:10px;">
-                <button class="btn" id="changeNickBtn">✏️ Сменить ник</button>
-                <button class="btn btn-danger" id="resetBtn">🔄 Сбросить</button>
-                <button class="btn" id="clothesBtn" style="background: #9b59b6;">👕 Одежда</button>
-            </div>
+        <div class="message">
+            Игровые сервера временно отключены.<br>
+            Сервера закрыты на время.<br>
+            Пожалуйста, зайдите позже.
         </div>
-        
-        <!-- 2D бой кнопка -->
-        <button class="btn btn-purple" id="startGameBtn" style="width:100%;">🎮 НАЧАТЬ 2D БОЙ</button>
-    </div>
 
-    <div id="page-weapons" class="page">
-        <div class="card"><h3>🔫 ВЫБЕРИ ОРУЖИЕ</h3><div id="weaponsList"></div></div>
-    </div>
+        <button class="retry-btn" onclick="location.reload()">
+            🔄 ПРОВЕРИТЬ СНОВА
+        </button>
 
-    <div id="page-inventory" class="page">
-        <div class="card"><h3>🎨 МОИ СКИНЫ</h3><div id="skinsList" class="items-grid"></div></div>
-    </div>
+        <div class="server-status">
+            <div class="red-dot"></div>
+            <div class="status-text">ВСЕ СЕРВЕРА OFFLINE</div>
+        </div>
 
-    <div id="page-craft" class="page">
-        <div class="card">
-            <h3>🔨 КРАФТ СКИНОВ</h3>
-            <p style="font-size:12px;">Выбери 3 одинаковых скина для крафта</p>
-            <div id="craftAvailable" class="items-grid" style="max-height: 200px;"></div>
-            <button class="btn btn-purple" id="openCraftWindowBtn">🔧 ОТКРЫТЬ КРАФТ</button>
+        <div class="error-code">
+            ERROR CODE: SRV-503 | CONNECTION LOST
         </div>
     </div>
 
-    <div id="page-shop" class="page">
-        <div class="card"><h3>📦 Обычный кейс</h3><p>500 G</p><button class="btn" id="openCommonCase">Открыть</button></div>
-        <div class="card"><h3>🔥 Редкий кейс</h3><p>1500 G</p><button class="btn" id="openRareCase">Открыть</button></div>
-        <div class="card"><h3>💎 Легендарный кейс</h3><p>5000 G</p><button class="btn" id="openLegendaryCase">Открыть</button></div>
-    </div>
-
-    <div id="page-battlepass" class="page">
-        <div class="card">
-            <h3 style="color:#ffd700;">⭐ BATTLE PASS</h3>
-            <p style="font-size:12px;">Победы в 2D бою дают уровень!</p>
-            <div style="background:rgba(255,215,0,0.1); border-radius:12px; padding:8px; margin:10px 0; display:flex; justify-content:space-between;">
-                <span style="color:#ffd700;">Уровень BP: <span id="bpLevel">0</span> / 30</span>
-                <span style="color:#aaa;">Побед до след.: <span id="bpWinsNeeded">—</span></span>
-            </div>
-            <div class="bp-track" id="bpTrack"></div>
-        </div>
-    </div>
-
-    <div id="page-potions" class="page">
-        <div class="card">
-            <h3 style="color:#a855f7;">🧪 ЗЕЛЬЯ</h3>
-            <div id="ownedPotionsList"></div>
-        </div>
-    </div>
-
-    <div id="page-promo" class="page">
-        <div class="card">
-            <h3>🔑 Активировать промокод</h3>
-            <div class="promo-input">
-                <input type="text" id="promoCodeInput" placeholder="Введите промокод">
-                <button class="btn" id="activatePromoBtn">Активировать</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Модалка крафта -->
-<div id="craftModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:#1a1a2e; border-radius:30px; padding:20px; max-width:400px; width:90%; border:2px solid #ffcc00;">
-        <h3>🔨 КРАФТ СКИНОВ</h3>
-        <div style="display:flex; justify-content:center; gap:10px; margin:20px 0; flex-wrap:wrap;">
-            <div id="craftSlot1" style="background:#1e293b; width:70px; height:90px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid #334155;">❓</div>
-            <div id="craftSlot2" style="background:#1e293b; width:70px; height:90px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid #334155;">❓</div>
-            <div id="craftSlot3" style="background:#1e293b; width:70px; height:90px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid #334155;">❓</div>
-            <div style="font-size:24px;">→</div>
-            <div id="craftResult" style="background:#1e293b; width:70px; height:90px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid #ffcc00;">❓</div>
-        </div>
-        <button class="btn" id="doCraftBtn" style="width:100%;">СКРАФТИТЬ</button>
-        <button class="btn btn-danger" id="closeCraftBtn" style="width:100%; margin-top:10px;">ЗАКРЫТЬ</button>
-    </div>
-</div>
-
-<!-- Модалка одежды -->
-<div id="clothesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:#1a1a2e; border-radius:30px; padding:20px; max-width:350px; width:90%; border:2px solid #ffcc00; text-align:center;">
-        <h3>👕 ОДЕЖДА АГЕНТА</h3>
-        <button class="btn" id="clothes1Btn" style="width:100%; margin:10px 0;">Черная рубашка с галстуком</button>
-        <button class="btn" id="clothes2Btn" style="width:100%; margin:10px 0; background:#e2e8f0; color:#000;">Белая футболка "Я eblan"</button>
-        <button class="btn btn-danger" id="closeClothesBtn" style="width:100%;">ЗАКРЫТЬ</button>
-    </div>
-</div>
-
-<!-- 2D ИГРА -->
-<div id="gameModal" class="game-modal">
-    <div class="game-canvas-container">
-        <canvas id="gameCanvas"></canvas>
-    </div>
-    <div class="game-controls">
-        <div class="joystick-area" id="joystickArea">
-            <div class="joystick-thumb" id="joystickThumb"></div>
-        </div>
-        <div class="game-stats">
-            <div>❤️ <span id="gameHealth">100</span></div>
-            <div>💰 <span id="gameGold">0</span></div>
-            <div>🌊 <span id="gameWave">1</span></div>
-        </div>
-        <div class="shoot-btn" id="shootBtn">🔫</div>
-    </div>
-    <div style="padding:10px;text-align:center;">
-        <button class="close-game" id="closeGameBtn">Выйти</button>
-    </div>
-</div>
-
-<script>
-    // ========== ВСТРОЕННЫЕ ПРОМОКОДЫ ==========
-    const HARDCODED_PROMOS = {
-        "EUSHYB4D6Z65": 4500,
-        "KR8TWG": 10000,
-        "БУРМАЛДЕНС": 7000,
-        "TOP_GAME": 1028,
-        "SECRET": 10000,
-        "STANDCLICK": 5000,
-        "STLAB": 1000,
-        "STARTBONUS": 150
-    };
-
-    // ========== ОСНОВНЫЕ ДАННЫЕ ==========
-    let game = {
-        id: null,
-        nick: "Игрок",
-        gold: 1000,
-        mmr: 0,
-        wins: 0,
-        skins: [],
-        usedPromos: [],
-        megaClickCooldown: 0,
-        bpLevel: 0,
-        bpClaimedRewards: [],
-        ownedPotions: [],
-        activePotions: [],
-        equippedClothing: null,
-        weapons: {
-            awp:    { name: "AWP", active: true, skin: null },
-            ak47:   { name: "AK-47", active: false, skin: null },
-            m4a4:   { name: "M4A4", active: false, skin: null },
-            deagle: { name: "Desert Eagle", active: false, skin: null }
-        }
-    };
-
-    // Battle Pass награды
-    const BP_REWARDS = [
-        { level: 1, type: 'gold', amount: 50, label: '50 G', icon: '🪙' },
-        { level: 2, type: 'skin', name: 'G22 Frost', label: 'G22 Frost', icon: '🔫' },
-        { level: 3, type: 'gold', amount: 100, label: '100 G', icon: '🪙' },
-        { level: 4, type: 'potion', ptype: 'red', label: 'Красное зелье', icon: '🔴' },
-        { level: 5, type: 'skin', name: 'AKM Tiger', label: 'AKM Tiger', icon: '🔫' },
-        { level: 6, type: 'gold', amount: 150, label: '150 G', icon: '🪙' },
-        { level: 7, type: 'potion', ptype: 'green', label: 'Зелёное зелье', icon: '🟢' },
-        { level: 8, type: 'skin', name: 'Desert Eagle Cobra', label: 'D.Eagle Cobra', icon: '🔫' },
-        { level: 9, type: 'gold', amount: 200, label: '200 G', icon: '🪙' },
-        { level: 10, type: 'skin', name: 'AWP Blood Moon', label: 'AWP Blood Moon', icon: '🔫', rarity: 'legendary' },
-        { level: 11, type: 'gold', amount: 250, label: '250 G', icon: '🪙' },
-        { level: 12, type: 'potion', ptype: 'red', label: 'Красное зелье', icon: '🔴' },
-        { level: 13, type: 'skin', name: 'M4A4 Dragon Scale', label: 'M4A4 Dragon', icon: '🔫', rarity: 'legendary' },
-        { level: 14, type: 'gold', amount: 300, label: '300 G', icon: '🪙' },
-        { level: 15, type: 'potion', ptype: 'green', label: 'Зелёное зелье', icon: '🟢' },
-        { level: 16, type: 'gold', amount: 400, label: '400 G', icon: '🪙' },
-        { level: 17, type: 'potion', ptype: 'red', label: 'Красное зелье', icon: '🔴' },
-        { level: 18, type: 'gold', amount: 500, label: '500 G', icon: '🪙' },
-        { level: 19, type: 'potion', ptype: 'green', label: 'Зелёное зелье', icon: '🟢' },
-        { level: 20, type: 'skin', name: 'Karambit Лавовый', label: 'Karambit BP', icon: '🗡️', rarity: 'arcane' },
-        { level: 21, type: 'gold', amount: 600, label: '600 G', icon: '🪙' },
-        { level: 22, type: 'gold', amount: 700, label: '700 G', icon: '🪙' },
-        { level: 23, type: 'potion', ptype: 'red', label: 'Красное зелье', icon: '🔴' },
-        { level: 24, type: 'gold', amount: 800, label: '800 G', icon: '🪙' },
-        { level: 25, type: 'skin', name: 'Golden Dragon AWP', label: 'Golden AWP', icon: '🐉', rarity: 'mythic' },
-        { level: 26, type: 'gold', amount: 900, label: '900 G', icon: '🪙' },
-        { level: 27, type: 'potion', ptype: 'green', label: 'Зелёное зелье', icon: '🟢' },
-        { level: 28, type: 'gold', amount: 1000, label: '1000 G', icon: '🪙' },
-        { level: 29, type: 'gold', amount: 1200, label: '1200 G', icon: '🪙' },
-        { level: 30, type: 'gold', amount: 2000, label: '2000 G 🏆', icon: '🏆' }
-    ];
-
-    // Скины для кейсов
-    const commonSkins = [
-        { name: "G22 Frost", rarity: "common", bonus: 2 },
-        { name: "MP5 Swarm", rarity: "common", bonus: 2 },
-        { name: "SSG 08 Abyss", rarity: "common", bonus: 2 }
-    ];
-    const rareSkins = [
-        { name: "AKM Tiger", rarity: "rare", bonus: 5 },
-        { name: "Desert Eagle Cobra", rarity: "rare", bonus: 5 },
-        { name: "M4A4 Griffin", rarity: "rare", bonus: 5 }
-    ];
-    const legendarySkins = [
-        { name: "AWP Dragon Lore", rarity: "legendary", bonus: 18 },
-        { name: "Karambit Fade", rarity: "legendary", bonus: 18 },
-        { name: "M9 Bayonet", rarity: "legendary", bonus: 18 }
-    ];
-
-    // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
-    function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
-
-    function getSkinRarity(skinName) {
-        const allSkins = [...commonSkins, ...rareSkins, ...legendarySkins];
-        const skin = allSkins.find(s => s.name === skinName);
-        return skin ? skin.rarity : "common";
-    }
-
-    function getSkinBonus(skinName) {
-        const allSkins = [...commonSkins, ...rareSkins, ...legendarySkins];
-        const skin = allSkins.find(s => s.name === skinName);
-        return skin ? skin.bonus : 2;
-    }
-
-    function getActiveWeapon() {
-        for (let id in game.weapons) if (game.weapons[id].active) return game.weapons[id];
-        return game.weapons.awp;
-    }
-
-    function getActiveWeaponBonus() {
-        const weapon = getActiveWeapon();
-        if (weapon.skin) return getSkinBonus(weapon.skin.name);
-        return 0;
-    }
-
-    function getClickGain() {
-        let gain = 2 + Math.floor(2 * getActiveWeaponBonus() / 100);
-        if (isPotionActive('green')) gain += 5;
-        return gain;
-    }
-
-    function getRankName() {
-        if (game.mmr >= 5000) return "🏆 The Global Elite";
-        if (game.mmr >= 3000) return "🏅 Master Guardian";
-        if (game.mmr >= 1500) return "⭐ Gold Nova";
-        if (game.mmr >= 500) return "🥉 Silver III";
-        return "🥉 Silver I";
-    }
-
-    function isPotionActive(ptype) {
-        return game.activePotions.some(a => a.ptype === ptype && Date.now() < a.endsAt);
-    }
-
-    function saveGame() {
-        if (!game.id) return;
-        localStorage.setItem('standclick_game', JSON.stringify(game));
-        updateMegaClickButton();
-    }
-
-    function loadGame() {
-        const saved = localStorage.getItem('standclick_game');
-        if (saved) {
-            try {
-                const d = JSON.parse(saved);
-                game.id = d.id;
-                game.nick = d.nick || "Игрок";
-                game.gold = d.gold ?? 1000;
-                game.mmr = d.mmr ?? 0;
-                game.wins = d.wins ?? 0;
-                game.skins = d.skins || [];
-                game.usedPromos = d.usedPromos || [];
-                game.megaClickCooldown = d.megaClickCooldown || 0;
-                game.bpLevel = d.bpLevel || 0;
-                game.bpClaimedRewards = d.bpClaimedRewards || [];
-                game.ownedPotions = d.ownedPotions || [];
-                game.activePotions = (d.activePotions || []).filter(a => Date.now() < a.endsAt);
-                game.equippedClothing = d.equippedClothing || null;
-                if (d.weapons) game.weapons = d.weapons;
-            } catch(e) {}
-        }
-        if (!game.id) {
-            game.id = generateId();
-            saveGame();
-        }
-        updateUI();
-        renderBattlePass();
-        renderPotions();
-        initThree();
-    }
-
-    function updateUI() {
-        document.getElementById('gold').innerHTML = Math.floor(game.gold) + " G";
-        document.getElementById('nick').innerText = game.nick;
-        document.getElementById('rank').innerHTML = getRankName();
-        document.getElementById('playerIdDisplay').innerText = game.id;
-        document.getElementById('skinBonusDisplay').innerHTML = `🎨 Бонус: +${getActiveWeaponBonus()}% голда`;
-        document.getElementById('bpLevel').innerText = game.bpLevel;
-        
-        document.getElementById('skinsList').innerHTML = game.skins.map((skin, i) => 
-            `<div class="item-card" onclick="selectSkinForWeapon(${i})">
-                <div>${skin.rarity === 'common' ? '🔵' : skin.rarity === 'rare' ? '🟢' : skin.rarity === 'epic' ? '🟣' : '🟠'}</div>
-                <div>${skin.name}</div>
-                <div style="font-size:10px;">${skin.rarity}</div>
-            </div>`
-        ).join('') || '<div style="color:#666;">Нет скинов</div>';
-        
-        renderWeaponsList();
-        updateCraftAvailable();
-        updateActivePotionDisplay();
-    }
-
-    function renderWeaponsList() {
-        const container = document.getElementById('weaponsList');
-        container.innerHTML = Object.entries(game.weapons).map(([id, w]) => `
-            <div class="weapon-card">
-                <div>🔫 ${w.name} ${w.active ? '✅' : ''}</div>
-                <div style="font-size:12px;">🎨 Скин: ${w.skin ? w.skin.name : 'нет'}</div>
-                ${!w.active ? `<button class="btn" onclick="equipWeapon('${id}')">🔫 ПРИМЕНИТЬ</button>` : ''}
-                ${w.skin ? `<button class="btn" style="background:#10b981;" onclick="openInspect('${id}')">🔍 ОСМОТРЕТЬ</button>` : ''}
-            </div>
-        `).join('');
-    }
-
-    function equipWeapon(weaponId) {
-        for (let id in game.weapons) game.weapons[id].active = (id === weaponId);
-        saveGame();
-        updateUI();
-        showToast(`🔫 ${game.weapons[weaponId].name} активировано!`);
-    }
-
-    function openInspect(weaponId) {
-        const weapon = game.weapons[weaponId];
-        if (weapon.skin) {
-            showToast(`🔍 Осмотр: ${weapon.name} | ${weapon.skin.name} (${weapon.skin.rarity})`);
-        } else {
-            showToast(`🔍 Осмотр: ${weapon.name} (без скина)`);
-        }
-    }
-
-    function selectSkinForWeapon(index) {
-        const skin = game.skins[index];
-        let html = '';
-        for (let [id, w] of Object.entries(game.weapons)) {
-            html += `<div class="weapon-card" onclick="attachSkinToWeapon('${id}', ${index})">
-                <div>🔫 ${w.name}</div>
-                <div style="font-size:12px;">🎨 Текущий: ${w.skin ? w.skin.name : 'нет'}</div>
-                <button class="btn">🎨 НАДЕТЬ</button>
-            </div>`;
-        }
-        document.getElementById('weaponsList').innerHTML = html;
-        showToast(`🎨 Выбери оружие для "${skin.name}"`);
-    }
-
-    function attachSkinToWeapon(weaponId, skinIndex) {
-        game.weapons[weaponId].skin = game.skins[skinIndex];
-        saveGame();
-        updateUI();
-        showToast(`🎨 Скин надет на ${game.weapons[weaponId].name}!`);
-    }
-
-    // Кейсы
-    function openCase(price, skinList, caseName) {
-        if (game.gold < price) { showToast(`❌ Нужно ${price} G`); return; }
-        game.gold -= price;
-        const randomSkin = skinList[Math.floor(Math.random() * skinList.length)];
-        game.skins.push({ name: randomSkin.name, rarity: randomSkin.rarity });
-        saveGame();
-        updateUI();
-        showToast(`🎁 ${caseName} | Выпало: ${randomSkin.name} (${randomSkin.rarity})!`);
-    }
-
-    // Мега клик
-    function updateMegaClickButton() {
-        const btn = document.getElementById('megaClickBtn');
-        const timerSpan = document.getElementById('megaTimer');
-        if (!btn) return;
-        if (game.megaClickCooldown > Date.now()) {
-            const remaining = Math.ceil((game.megaClickCooldown - Date.now()) / 1000);
-            const hours = Math.floor(remaining / 3600);
-            const minutes = Math.floor((remaining % 3600) / 60);
-            const seconds = remaining % 60;
-            timerSpan.innerHTML = `${hours}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-            btn.classList.add('disabled');
-        } else {
-            timerSpan.innerHTML = 'Готово!';
-            btn.classList.remove('disabled');
-        }
-    }
-
-    function useMegaClick() {
-        if (game.megaClickCooldown > Date.now()) { showToast(`❌ Мега клик перезаряжается!`); return; }
-        game.gold += 20;
-        game.megaClickCooldown = Date.now() + (5 * 60 * 60 * 1000);
-        saveGame();
-        updateUI();
-        showToast(`⚡ МЕГА КЛИК! +20 G! Следующий через 5 часов`);
-    }
-
-    // Battle Pass
-    function checkBPProgress() {
-        const newLevel = Math.min(30, Math.floor(game.wins / 2));
-        if (newLevel > game.bpLevel) game.bpLevel = newLevel;
-    }
-
-    function renderBattlePass() {
-        checkBPProgress();
-        const track = document.getElementById('bpTrack');
-        const winsPerLevel = 2;
-        const winsToNext = game.bpLevel >= 30 ? 0 : winsPerLevel - (game.wins % winsPerLevel);
-        document.getElementById('bpWinsNeeded').innerText = game.bpLevel >= 30 ? 'Макс!' : winsToNext;
-        
-        track.innerHTML = BP_REWARDS.map(r => {
-            const claimed = game.bpClaimedRewards.includes(r.level);
-            const available = !claimed && r.level <= game.bpLevel;
-            let cls = 'bp-step';
-            if (claimed) cls += ' claimed';
-            else if (available) cls += ' available';
-            const btnHtml = available ? `<button class="bp-claim-btn" onclick="claimBPReward(${r.level})">Забрать</button>` : claimed ? `<div style="color:#ffd700;">✓</div>` : `<div style="color:#555;">🔒</div>`;
-            return `<div class="${cls}"><div class="bp-icon">${r.icon}</div><div class="bp-label">${r.label}</div>${btnHtml}</div>`;
-        }).join('');
-    }
-
-    function claimBPReward(level) {
-        const r = BP_REWARDS.find(x => x.level === level);
-        if (!r || game.bpClaimedRewards.includes(level)) return;
-        game.bpClaimedRewards.push(level);
-        if (r.type === 'gold') { game.gold += r.amount; showToast(`+${r.amount} G!`); }
-        else if (r.type === 'skin') { game.skins.push({ name: r.name, rarity: r.rarity || getSkinRarity(r.name) }); showToast(`Получен скин: ${r.name}!`); }
-        else if (r.type === 'potion') { game.ownedPotions.push({ ptype: r.ptype, id: Date.now() }); showToast(`Получено зелье!`); }
-        saveGame(); updateUI(); renderBattlePass(); renderPotions();
-    }
-
-    // Зелья
-    function renderPotions() {
-        const el = document.getElementById('ownedPotionsList');
-        if (!el) return;
-        if (game.ownedPotions.length === 0) { el.innerHTML = '<div style="color:#666;">Нет зелий</div>'; return; }
-        el.innerHTML = game.ownedPotions.map((p, i) => {
-            const isRed = p.ptype === 'red';
-            const isActive = game.activePotions.some(a => a.ptype === p.ptype && Date.now() < a.endsAt);
-            return `<div class="potion-card ${isRed ? 'red-potion' : 'green-potion'}">
-                <div class="potion-icon">${isRed ? '🔴' : '🟢'}</div>
-                <div style="flex:1;"><div style="font-weight:bold;">${isRed ? 'Красное зелье' : 'Зелёное зелье'}</div><div style="font-size:11px;">${isRed ? 'Ускоряет клики на 4 часа' : '+5 G за клик на 4 часа'}</div></div>
-                ${isActive ? `<div class="potion-timer">Активно</div>` : `<button class="btn" style="background:#a855f7;" onclick="applyPotion(${i})">Применить</button>`}
-            </div>`;
-        }).join('');
-    }
-
-    function applyPotion(index) {
-        const p = game.ownedPotions.splice(index, 1)[0];
-        game.activePotions = game.activePotions.filter(a => a.ptype !== p.ptype);
-        game.activePotions.push({ ptype: p.ptype, endsAt: Date.now() + 4 * 60 * 60 * 1000 });
-        saveGame();
-        renderPotions();
-        showToast(`Зелье применено на 4 часа!`);
-    }
-
-    function updateActivePotionDisplay() {
-        game.activePotions = game.activePotions.filter(a => Date.now() < a.endsAt);
-        const el = document.getElementById('activePotionDisplay');
-        if (!el) return;
-        if (game.activePotions.length === 0) { if(el) el.innerHTML = ''; return; }
-        el.innerHTML = game.activePotions.map(a => `<div style="position:fixed; bottom:20px; right:15px; background:#000; padding:5px 10px; border-radius:10px; border:1px solid ${a.ptype === 'red' ? '#ef4444' : '#10b981'};">${a.ptype === 'red' ? '🔴' : '🟢'}</div>`).join('');
-    }
-
-    // Крафт
-    let craftSelectedSkin = null;
-    function updateCraftAvailable() {
-        const container = document.getElementById('craftAvailable');
-        const skinCounts = {};
-        for (let skin of game.skins) skinCounts[skin.name] = (skinCounts[skin.name] || 0) + 1;
-        let html = '';
-        for (let [name, count] of Object.entries(skinCounts)) {
-            if (count >= 3) {
-                html += `<div class="item-card" onclick="selectSkinForCraft('${name.replace(/'/g, "\\'")}')">
-                    <div>${getSkinRarity(name) === 'common' ? '🔵' : getSkinRarity(name) === 'rare' ? '🟢' : getSkinRarity(name) === 'epic' ? '🟣' : '🟠'}</div>
-                    <div>${name}</div>
-                    <div style="font-size:10px;">${count} шт.</div>
-                </div>`;
+    <script>
+        // Создаем летящие красные частицы
+        function createParticles() {
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = Math.random() * 4 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `rgba(255, 0, 0, ${Math.random() * 0.4 + 0.1})`;
+                particle.style.borderRadius = '50%';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.pointerEvents = 'none';
+                particle.style.zIndex = '5';
+                particle.style.animation = `float ${Math.random() * 4 + 3}s infinite ease-in-out`;
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(particle);
             }
         }
-        container.innerHTML = html || '<div style="color:#666;">Нет скинов для крафта (нужно 3 одинаковых)</div>';
-    }
 
-    function selectSkinForCraft(skinName) { craftSelectedSkin = skinName; openCraftWindow(); }
-
-    function getNextSkin(currentSkin) {
-        const rarity = getSkinRarity(currentSkin);
-        if (rarity === "common") return rareSkins[Math.floor(Math.random() * rareSkins.length)].name;
-        if (rarity === "rare") return legendarySkins[Math.floor(Math.random() * legendarySkins.length)].name;
-        if (rarity === "legendary") return "Golden Dragon AWP";
-        return null;
-    }
-
-    function openCraftWindow() {
-        if (!craftSelectedSkin) { showToast("❌ Выберите скин!"); return; }
-        const count = game.skins.filter(s => s.name === craftSelectedSkin).length;
-        if (count < 3) { showToast("❌ Нужно 3 скина!"); return; }
-        document.getElementById('craftSlot1').innerHTML = craftSelectedSkin;
-        document.getElementById('craftSlot2').innerHTML = craftSelectedSkin;
-        document.getElementById('craftSlot3').innerHTML = craftSelectedSkin;
-        const newSkin = getNextSkin(craftSelectedSkin);
-        document.getElementById('craftResult').innerHTML = newSkin || '❌';
-        document.getElementById('craftModal').style.display = 'flex';
-    }
-
-    function doCraft() {
-        if (!craftSelectedSkin) return;
-        const count = game.skins.filter(s => s.name === craftSelectedSkin).length;
-        if (count < 3) { showToast("❌ Недостаточно!"); closeCraftWindow(); return; }
-        const newSkinName = getNextSkin(craftSelectedSkin);
-        if (!newSkinName) { showToast("❌ Нельзя улучшить!"); closeCraftWindow(); return; }
-        let removed = 0;
-        for (let i = game.skins.length-1; i >=0 && removed<3; i--) {
-            if (game.skins[i].name === craftSelectedSkin) { game.skins.splice(i,1); removed++; }
-        }
-        game.skins.push({ name: newSkinName, rarity: getSkinRarity(newSkinName) });
-        saveGame();
-        updateUI();
-        showToast(`🔨 Крафт! +${newSkinName}`);
-        closeCraftWindow();
-        craftSelectedSkin = null;
-    }
-
-    function closeCraftWindow() {
-        document.getElementById('craftModal').style.display = 'none';
-        document.getElementById('craftSlot1').innerHTML = '❓';
-        document.getElementById('craftSlot2').innerHTML = '❓';
-        document.getElementById('craftSlot3').innerHTML = '❓';
-        document.getElementById('craftResult').innerHTML = '❓';
-    }
-
-    // Одежда
-    function equipClothing(id) {
-        game.equippedClothing = id;
-        saveGame();
-        applyClothingToModel(id);
-        document.getElementById('clothesModal').style.display = 'none';
-        showToast("👕 Костюм надет!");
-    }
-
-    function applyClothingToModel(id) {
-        if (!agentGroup) return;
-        if (id === 1) {
-            agentGroup.children.forEach(c => { if(c.isTorso) c.material.color.setHex(0x1e293b); });
-        } else if (id === 2) {
-            agentGroup.children.forEach(c => { if(c.isTorso) c.material.color.setHex(0xf8fafc); });
-        }
-    }
-
-    // Промокоды
-    function activatePromo() {
-        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
-        if (!code) { showToast("❌ Введите промокод!"); return; }
-        if (game.usedPromos.includes(code)) { showToast("❌ Промокод уже использован!"); return; }
-        if (HARDCODED_PROMOS[code]) {
-            game.gold += HARDCODED_PROMOS[code];
-            game.usedPromos.push(code);
-            saveGame();
-            updateUI();
-            document.getElementById('promoCodeInput').value = '';
-            showToast(`🎉 +${HARDCODED_PROMOS[code]} G! Промокод активирован!`);
-            return;
-        }
-        showToast("❌ Неверный промокод!");
-    }
-
-    // 2D БОЙ
-    let gameActive = false, gameAnimationId = null;
-    let player = { x: 250, y: 400, health: 100, maxHealth: 100 };
-    let enemies = [], bullets = [];
-    let wave = 1, waveKills = 0, enemiesToKill = 5, isBossWave = false, gameGoldEarned = 0;
-    let joystick = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
-    let lastShoot = 0, shootDelay = 200;
-    let canvas, ctx;
-
-    function startGame() {
-        document.getElementById('gameModal').classList.add('active');
-        canvas = document.getElementById('gameCanvas');
-        ctx = canvas.getContext('2d');
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        player = { x: canvas.width/2, y: canvas.height-80, health: 100, maxHealth: 100 };
-        enemies = []; bullets = [];
-        wave = 1; waveKills = 0; enemiesToKill = 5; isBossWave = false; gameGoldEarned = 0;
-        gameActive = true;
-        updateGameUI();
-        spawnWave();
-        gameAnimationId = requestAnimationFrame(gameLoop);
-    }
-
-    function resizeCanvas() { if (canvas) { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; } }
-
-    function spawnWave() {
-        if (isBossWave) {
-            enemies.push({ x: canvas.width/2 - 25, y: 50, width: 50, height: 50, health: 500, maxHealth: 500, speed: 1, isBoss: true });
-        } else {
-            for (let i = 0; i < enemiesToKill; i++) {
-                enemies.push({ x: 20 + Math.random() * (canvas.width - 100), y: 20 + Math.random() * 200, width: 40, height: 40, health: 150, maxHealth: 150, speed: 1.5 + Math.random(), isBoss: false });
-            }
-        }
-    }
-
-    function updateGameUI() {
-        document.getElementById('gameHealth').innerText = player.health;
-        document.getElementById('gameGold').innerText = gameGoldEarned;
-        document.getElementById('gameWave').innerText = wave;
-    }
-
-    function gameLoop() {
-        if (!gameActive || !canvas || !ctx) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        if (joystick.active) {
-            let dx = joystick.currentX - joystick.startX, dy = joystick.currentY - joystick.startY;
-            let dist = Math.hypot(dx, dy);
-            if (dist > 40) { dx = dx / dist * 40; dy = dy / dist * 40; }
-            let moveX = (dx / 40) * 5, moveY = (dy / 40) * 5;
-            player.x += moveX; player.y += moveY;
-            player.x = Math.max(20, Math.min(canvas.width-40, player.x));
-            player.y = Math.max(50, Math.min(canvas.height-80, player.y));
-        }
-        
-        for (let e of enemies) {
-            const dx = player.x - e.x, dy = player.y - e.y, dist = Math.hypot(dx, dy);
-            if (dist > 0) { e.x += (dx / dist) * e.speed; e.y += (dy / dist) * e.speed; }
-        }
-        
-        for (let i = 0; i < bullets.length; i++) {
-            bullets[i].x += bullets[i].vx; bullets[i].y += bullets[i].vy;
-            if (bullets[i].x < 0 || bullets[i].x > canvas.width || bullets[i].y < 0 || bullets[i].y > canvas.height) { bullets.splice(i,1); i--; }
-        }
-        
-        for (let i = 0; i < bullets.length; i++) {
-            for (let j = 0; j < enemies.length; j++) {
-                const b = bullets[i], e = enemies[j];
-                if (b.x > e.x && b.x < e.x+e.width && b.y > e.y && b.y < e.y+e.height) {
-                    e.health -= 50;
-                    bullets.splice(i,1); i--;
-                    if (e.health <= 0) {
-                        gameGoldEarned += e.isBoss ? 15 : 5;
-                        enemies.splice(j,1);
-                        waveKills++;
-                        updateGameUI();
-                        checkWaveComplete();
-                    }
-                    break;
+        // Добавляем стиль для частиц
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% {
+                    transform: translateY(0) translateX(0);
+                    opacity: 0;
+                }
+                20% {
+                    opacity: 0.8;
+                }
+                80% {
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translateY(-200px) translateX(${Math.random() * 100 - 50}px);
+                    opacity: 0;
                 }
             }
-        }
+        `;
+        document.head.appendChild(style);
         
-        for (let i = 0; i < enemies.length; i++) {
-            const e = enemies[i];
-            if (player.x < e.x+e.width && player.x+40 > e.x && player.y < e.y+e.height && player.y+40 > e.y) {
-                player.health -= 10;
-                enemies.splice(i,1); i--;
-                updateGameUI();
-                if (player.health <= 0) { gameOver(); return; }
+        createParticles();
+
+        // Обновляем статус с таймером (типо проверка)
+        let attempts = 0;
+        setInterval(() => {
+            attempts++;
+            const statusText = document.querySelector('.status-text');
+            if (statusText && attempts % 6 === 0) {
+                statusText.style.opacity = '0.5';
+                setTimeout(() => {
+                    if (statusText) statusText.style.opacity = '1';
+                }, 500);
             }
-        }
-        
-        ctx.fillStyle = '#4ade80'; ctx.fillRect(player.x, player.y, 40, 40);
-        ctx.fillStyle = '#fff'; ctx.font = 'bold 20px monospace'; ctx.fillText('🔫', player.x+10, player.y+28);
-        
-        for (const e of enemies) {
-            if (e.isBoss) {
-                ctx.fillStyle = '#dc2626'; ctx.fillRect(e.x, e.y, e.width, e.height);
-                ctx.fillStyle = '#fff'; ctx.font = '12px monospace'; ctx.fillText(`BOSS ${e.health}/${e.maxHealth}`, e.x+5, e.y+25);
-                ctx.fillStyle = '#ffcc00'; ctx.fillRect(e.x, e.y-8, (e.health/e.maxHealth)*e.width, 5);
-            } else {
-                ctx.fillStyle = '#ef4444'; ctx.fillRect(e.x, e.y, e.width, e.height);
-                ctx.fillStyle = '#fff'; ctx.font = '10px monospace'; ctx.fillText(`${e.health}`, e.x+15, e.y+25);
-                ctx.fillStyle = '#ffcc00'; ctx.fillRect(e.x, e.y-5, (e.health/e.maxHealth)*e.width, 3);
-            }
-        }
-        
-        for (const b of bullets) { ctx.fillStyle = '#ffff00'; ctx.fillRect(b.x-2, b.y-2, 4, 4); }
-        
-        ctx.fillStyle = '#dc2626'; ctx.fillRect(10, 10, 200, 15);
-        ctx.fillStyle = '#4ade80'; ctx.fillRect(10, 10, (player.health/player.maxHealth)*200, 15);
-        
-        gameAnimationId = requestAnimationFrame(gameLoop);
-    }
-
-    function checkWaveComplete() {
-        if (waveKills >= enemiesToKill && enemies.length === 0) {
-            wave++; waveKills = 0;
-            if (wave % 6 === 0) { isBossWave = true; enemiesToKill = 1; }
-            else { isBossWave = false; enemiesToKill = Math.min(5 + Math.floor(wave/3), 15); }
-            spawnWave();
-            updateGameUI();
-            showToast(`🌊 Волна ${wave}! ${isBossWave ? 'БОСС!' : ''}`);
-        }
-    }
-
-    function shoot() {
-        if (!gameActive) return;
-        const now = Date.now();
-        if (now - lastShoot < shootDelay) return;
-        lastShoot = now;
-        bullets.push({ x: player.x + 20, y: player.y, vx: 0, vy: -10 });
-    }
-
-    function gameOver() {
-        gameActive = false;
-        if (gameAnimationId) cancelAnimationFrame(gameAnimationId);
-        game.gold += gameGoldEarned;
-        game.wins++;
-        checkBPProgress();
-        if (Math.random() < 0.3) {
-            const ptype = Math.random() < 0.5 ? 'red' : 'green';
-            game.ownedPotions.push({ ptype, id: Date.now() });
-            showToast(`🧪 Получено зелье за победу!`);
-        }
-        saveGame();
-        updateUI();
-        renderBattlePass();
-        renderPotions();
-        showToast(`💀 ИГРА ОКОНЧЕНА! Заработано: ${gameGoldEarned} G`);
-        document.getElementById('gameModal').classList.remove('active');
-    }
-
-    function closeGame() {
-        gameActive = false;
-        if (gameAnimationId) cancelAnimationFrame(gameAnimationId);
-        document.getElementById('gameModal').classList.remove('active');
-    }
-
-    // 3D АГЕНТ
-    let agentScene, agentCamera, agentRenderer, agentGroup;
-
-    function initThree() {
-        const canvas = document.getElementById('heroCanvas');
-        if (!canvas) return;
-        const w = canvas.clientWidth || 300, h = canvas.clientHeight || 280;
-        agentRenderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-        agentRenderer.setSize(w, h);
-        agentScene = new THREE.Scene();
-        agentCamera = new THREE.PerspectiveCamera(45, w/h, 0.1, 100);
-        agentCamera.position.set(0, 1.5, 5);
-        agentCamera.lookAt(0, 1, 0);
-        
-        const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(2, 5, 3); agentScene.add(light);
-        agentScene.add(new THREE.AmbientLight(0x404040));
-        
-        agentGroup = new THREE.Group();
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.5 });
-        const headMat = new THREE.MeshStandardMaterial({ color: 0xf5cba0 });
-        const armMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
-        
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.4, 1.2, 8), bodyMat);
-        body.position.y = 0; body.isTorso = true;
-        agentGroup.add(body);
-        
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.45, 32, 32), headMat);
-        head.position.y = 0.85;
-        agentGroup.add(head);
-        
-        const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.8, 8), armMat);
-        leftArm.position.set(-0.65, 0.5, 0);
-        leftArm.rotation.z = 0.3;
-        agentGroup.add(leftArm);
-        
-        const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.8, 8), armMat);
-        rightArm.position.set(0.65, 0.5, 0);
-        rightArm.rotation.z = -0.3;
-        agentGroup.add(rightArm);
-        
-        agentScene.add(agentGroup);
-        
-        if (game.equippedClothing) applyClothingToModel(game.equippedClothing);
-        
-        function animate() {
-            requestAnimationFrame(animate);
-            agentGroup.rotation.y = Math.sin(Date.now() * 0.002) * 0.2;
-            agentRenderer.render(agentScene, agentCamera);
-        }
-        animate();
-    }
-
-    // Вспомогательные
-    function copyPlayerId() { if (game.id) navigator.clipboard.writeText(game.id); showToast('📋 ID скопирован!'); }
-    function showToast(msg) {
-        const t = document.createElement('div');
-        t.textContent = msg;
-        t.style.cssText = `position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#10b981;padding:10px 20px;border-radius:30px;font-size:13px;z-index:9999;animation:fadeOut 2s ease;white-space:nowrap;`;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 2000);
-    }
-
-    // Джойстик
-    const joystickArea = document.getElementById('joystickArea');
-    const joystickThumb = document.getElementById('joystickThumb');
-    function handleJoystickStart(e) {
-        e.preventDefault();
-        const rect = joystickArea.getBoundingClientRect();
-        let cx = e.touches ? e.touches[0].clientX : e.clientX;
-        let cy = e.touches ? e.touches[0].clientY : e.clientY;
-        joystick.active = true;
-        joystick.startX = rect.left + 50;
-        joystick.startY = rect.top + 50;
-        joystick.currentX = cx; joystick.currentY = cy;
-        updateJoystickThumb(cx, cy);
-    }
-    function handleJoystickMove(e) {
-        if (!joystick.active) return;
-        e.preventDefault();
-        let cx = e.touches ? e.touches[0].clientX : e.clientX;
-        let cy = e.touches ? e.touches[0].clientY : e.clientY;
-        joystick.currentX = cx; joystick.currentY = cy;
-        updateJoystickThumb(cx, cy);
-    }
-    function updateJoystickThumb(cx, cy) {
-        let dx = cx - joystick.startX, dy = cy - joystick.startY;
-        let dist = Math.hypot(dx, dy);
-        if (dist > 40) { dx = dx / dist * 40; dy = dy / dist * 40; }
-        joystickThumb.style.transform = `translate(${dx}px, ${dy}px)`;
-    }
-    function handleJoystickEnd() { joystick.active = false; joystickThumb.style.transform = 'translate(0px, 0px)'; }
-    if(joystickArea) {
-        joystickArea.addEventListener('mousedown', handleJoystickStart);
-        window.addEventListener('mousemove', handleJoystickMove);
-        window.addEventListener('mouseup', handleJoystickEnd);
-        joystickArea.addEventListener('touchstart', handleJoystickStart);
-        window.addEventListener('touchmove', handleJoystickMove);
-        window.addEventListener('touchend', handleJoystickEnd);
-    }
-
-    // Стиль для тоста
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `@keyframes fadeOut { 0%,70% { opacity:1; } 100% { opacity:0; } }`;
-    document.head.appendChild(styleEl);
-
-    // ========== СОБЫТИЯ ==========
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${btn.dataset.page}`).classList.add('active');
-        });
-    });
-
-    document.getElementById('clickBtn').onclick = () => { game.gold += getClickGain(); saveGame(); updateUI(); };
-    document.getElementById('megaClickBtn').onclick = useMegaClick;
-    document.getElementById('changeNickBtn').onclick = () => { let n = prompt("Новый ник:", game.nick); if(n && n.trim()) { game.nick = n.trim(); saveGame(); updateUI(); } };
-    document.getElementById('resetBtn').onclick = () => { if(confirm("Сбросить прогресс?")) { localStorage.clear(); location.reload(); } };
-    document.getElementById('activatePromoBtn').onclick = activatePromo;
-    document.getElementById('openCommonCase').onclick = () => openCase(500, commonSkins, "Обычный кейс");
-    document.getElementById('openRareCase').onclick = () => openCase(1500, rareSkins, "Редкий кейс");
-    document.getElementById('openLegendaryCase').onclick = () => openCase(5000, legendarySkins, "Легендарный кейс");
-    document.getElementById('openCraftWindowBtn').onclick = () => { if(craftSelectedSkin) openCraftWindow(); else showToast("❌ Выбери скин!"); };
-    document.getElementById('doCraftBtn').onclick = doCraft;
-    document.getElementById('closeCraftBtn').onclick = closeCraftWindow;
-    document.getElementById('startGameBtn').onclick = startGame;
-    document.getElementById('closeGameBtn').onclick = closeGame;
-    document.getElementById('shootBtn').onclick = shoot;
-    document.getElementById('clothesBtn').onclick = () => document.getElementById('clothesModal').style.display = 'flex';
-    document.getElementById('clothes1Btn').onclick = () => equipClothing(1);
-    document.getElementById('clothes2Btn').onclick = () => equipClothing(2);
-    document.getElementById('closeClothesBtn').onclick = () => document.getElementById('clothesModal').style.display = 'none';
-    document.getElementById('shootBtn').addEventListener('touchstart', (e) => { e.preventDefault(); shoot(); });
-
-    window.selectSkinForWeapon = selectSkinForWeapon;
-    window.attachSkinToWeapon = attachSkinToWeapon;
-    window.equipWeapon = equipWeapon;
-    window.selectSkinForCraft = selectSkinForCraft;
-    window.claimBPReward = claimBPReward;
-    window.applyPotion = applyPotion;
-    window.copyPlayerId = copyPlayerId;
-
-    loadGame();
-    setInterval(() => { updateActivePotionDisplay(); saveGame(); }, 1000);
-    setInterval(() => updateMegaClickButton(), 1000);
-</script>
+        }, 10000);
+    </script>
 </body>
 </html>
