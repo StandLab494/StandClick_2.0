@@ -2,268 +2,555 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Сервера выключены</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>StandClick 2.2 — Blood Update</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #050505;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        button { outline: none; }
+        body { 
+            background: #0a0a0f;
+            background-image: 
+                radial-gradient(ellipse at 20% 50%, rgba(255,40,40,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(120,0,255,0.04) 0%, transparent 50%);
             font-family: -apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
-            position: relative;
-            overflow: hidden;
+            color: white; min-height: 100vh; overflow-x: hidden;
         }
-
-        /* Красное свечение по краям */
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 50% 50%, rgba(255,0,0,0.08) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        /* Анимация пульсации */
-        @keyframes pulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        @keyframes glow {
-            0% { text-shadow: 0 0 5px #ff0000; }
-            100% { text-shadow: 0 0 25px #ff0000, 0 0 35px #ff0000; }
-        }
-
-        .container {
-            text-align: center;
-            padding: 30px;
-            z-index: 10;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Красный экран-заставка */
-        .red-screen {
-            position: absolute;
-            inset: 0;
-            background: #8B0000;
-            opacity: 0;
-            animation: redFlash 1s ease-out forwards;
-            pointer-events: none;
-            z-index: 20;
-        }
-
-        @keyframes redFlash {
-            0% { opacity: 0; }
-            20% { opacity: 0.6; }
-            100% { opacity: 0; }
-        }
-
-        .icon {
-            font-size: 120px;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite, glow 1.5s infinite alternate;
-            filter: drop-shadow(0 0 20px rgba(255,0,0,0.5));
-        }
-
-        h1 {
-            font-size: clamp(32px, 8vw, 52px);
-            font-weight: 900;
-            color: #ff0000;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            margin-bottom: 15px;
-            animation: blink 1.5s infinite;
-        }
-
-        .subtitle {
-            font-size: 18px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .message {
-            font-size: 14px;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 30px;
-            max-width: 350px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Кнопка попробовать снова */
-        .retry-btn {
-            padding: 14px 40px;
-            background: linear-gradient(135deg, #8B0000, #4a0000);
-            border: 2px solid #ff0000;
-            border-radius: 50px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .retry-btn:hover {
-            transform: scale(1.05);
-            background: linear-gradient(135deg, #aa0000, #6a0000);
-            box-shadow: 0 0 20px rgba(255,0,0,0.4);
-        }
-
-        .retry-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Статус сервера */
-        .server-status {
-            margin-top: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .red-dot {
-            width: 10px;
-            height: 10px;
-            background: #ff0000;
-            border-radius: 50%;
-            animation: blink 1s infinite;
-            box-shadow: 0 0 8px #ff0000;
-        }
-
-        .status-text {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        /* Ошибка */
-        .error-code {
-            margin-top: 20px;
-            font-size: 11px;
-            color: rgba(255,255,255,0.2);
-            font-family: monospace;
-        }
+        @keyframes flashScreen { 0%{box-shadow:inset 0 0 0 0 transparent;} 10%{box-shadow:inset 0 0 100px 30px rgba(225,29,72,0.5);} 100%{box-shadow:inset 0 0 0 0 transparent;} }
+        body.mega-flash { animation: flashScreen 0.7s ease-out; }
+        #introScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; }
+        #introCanvas3D { position: absolute; inset: 0; width: 100%; height: 100%; }
+        .intro-title { font-size: clamp(42px,10vw,80px); font-weight: 900; color: #ff4d4d; text-transform: uppercase; letter-spacing: 8px; animation: introPulse 3s ease-in-out infinite; margin-bottom: 6px; }
+        .intro-sub { font-size: 13px; color: rgba(255,120,120,0.7); letter-spacing: 5px; margin-bottom: 50px; }
+        .intro-btn { padding: 16px 52px; font-size: 17px; font-weight: 800; background: linear-gradient(135deg,#ff4d4d,#cc0000); border: none; border-radius: 50px; cursor: pointer; color: #fff; letter-spacing: 2px; box-shadow: 0 0 30px rgba(255,77,77,0.6); transition: all 0.2s; }
+        .intro-btn:hover { transform: scale(1.06); }
+        @keyframes introPulse { 0%,100%{text-shadow:0 0 20px #ff4d4d;} 50%{text-shadow:0 0 50px #ff6666,0 0 90px #ff2222;} }
+        #maintenanceScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000; z-index: 999999; flex-direction: column; justify-content: center; align-items: center; }
+        .main-layout { display: flex; width: 100%; max-width: 1000px; margin: 0 auto; }
+        .side-icon-bar { width: 56px; background: rgba(0,0,0,0.55); border-right: 1px solid rgba(255,77,77,0.12); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 3px; flex-shrink: 0; }
+        .side-icon-btn { width: 40px; height: 40px; border-radius: 11px; background: rgba(255,77,77,0.05); border: 1px solid rgba(255,77,77,0.1); color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .side-icon-btn:hover { background: rgba(255,77,77,0.16); color: #ff4d4d; transform: translateX(3px); }
+        .side-divider { width: 26px; height: 1px; background: rgba(255,77,77,0.1); margin: 2px 0; }
+        .main-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #heroCanvas { width: 100%; max-width: 420px; height: 460px; display: block; cursor: grab; touch-action: none; }
+        .gold { font-size: 32px; font-weight: 800; color: #ffd700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .nick { font-size: 14px; color: rgba(255,255,255,0.8); }
+        .click-area { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 10px 0; }
+        .click-btn { width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff5555, #cc0000); border: none; cursor: pointer; box-shadow: 0 0 25px rgba(255,77,77,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .click-btn:active { transform: scale(0.93); }
+        .mega-click-btn { width: 58px; height: 58px; border-radius: 50%; background: radial-gradient(circle at 35% 35%,#e11d48,#9f1239); border: none; color: white; font-size: 9px; font-weight: bold; cursor: pointer; }
+        .mega-click-btn:disabled { background: #333; cursor: not-allowed; opacity: 0.5; }
+        .mega-timer { font-size: 8px; color: rgba(255,255,255,0.4); background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 10px; }
+        .id-box { background: rgba(14,14,20,0.9); border-radius: 12px; padding: 5px 10px; display: flex; align-items: center; gap: 8px; }
+        .btn { background: linear-gradient(135deg,rgba(255,60,60,0.9),rgba(200,0,0,0.85)); color: #fff; border: none; padding: 6px 10px; border-radius: 30px; font-weight: 700; cursor: pointer; transition: all 0.18s; font-size: 10px; }
+        .btn-danger { background: linear-gradient(135deg,rgba(180,20,40,0.9),rgba(120,0,20,0.85)); }
+        .card { background: rgba(22,22,28,0.92); border-radius: 20px; padding: 15px; margin: 10px auto; border: 1px solid rgba(255,255,255,0.07); max-width: 600px; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; max-height: 350px; overflow-y: auto; }
+        .inv-item-3d { background: rgba(22,22,30,0.92); border-radius: 14px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.06); transition: all 0.18s; }
+        .weapon-card { background: #1e293b; border-radius: 16px; padding: 12px; margin: 8px 0; border-left: 4px solid #ff4d4d; }
+        .nav { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; padding: 8px; background: rgba(5,0,0,0.92); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
+        .nav-btn { background: rgba(30,41,59,0.8); border: 1px solid rgba(255,77,77,0.15); color: #aaa; padding: 7px 11px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; transition: all 0.25s; display: flex; align-items: center; gap: 5px; }
+        .nav-btn.active { background: rgba(255,77,77,0.18); color: #ff4d4d; border-color: #ff4d4d; }
+        .page { display: none; width: 100%; }
+        .page.active { display: block; animation: slideInPage 0.3s ease; }
+        @keyframes slideInPage { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .friend-input-wrapper { display: flex; gap: 8px; margin-top: 12px; }
+        .friend-input-wrapper input { flex: 1; background: #1e293b; border: 1px solid #ff4d4d; padding: 12px 15px; border-radius: 30px; color: white; }
+        .promo-input { display: flex; gap: 10px; margin-top: 10px; }
+        .promo-input input { flex: 1; background: #1e293b; border: 1px solid #ff4d4d; padding: 12px 15px; border-radius: 30px; color: white; }
+        .roulette-wrap { overflow: hidden; border-radius: 10px; border: 2px solid rgba(255,77,77,0.35); position: relative; height: 110px; margin: 12px 0; background: #080000; }
+        .roulette-track { display: flex; gap: 5px; padding: 8px; will-change: transform; }
+        .roulette-cell { flex-shrink: 0; width: 90px; height: 90px; border-radius: 9px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); font-size: 28px; }
+        .roulette-pin { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #ff4d4d; transform: translateX(-50%); box-shadow: 0 0 8px #ff4d4d; z-index: 5; }
+        .roulette-pin::before { content:"▼"; position:absolute; top:-12px; left:50%; transform:translateX(-50%); color:#ff4d4d; font-size:12px; }
+        #closeSectionBtn { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 300; background: rgba(10,0,0,0.92); border: 1px solid rgba(255,77,77,0.45); color: #ff4d4d; width: 52px; height: 52px; border-radius: 50%; font-size: 22px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+        #closeSectionBtn.visible { display: flex; }
+        #sideDrawer { position: fixed; left: 0; top: 0; height: 100%; width: 265px; background: rgba(5,0,0,0.98); border-right: 1px solid rgba(255,77,77,0.22); z-index: 600; transform: translateX(-100%); transition: transform 0.32s; display: flex; flex-direction: column; }
+        #sideDrawer.open { transform: translateX(0); }
+        #drawerOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 599; opacity: 0; pointer-events: none; transition: opacity 0.28s; }
+        #drawerOverlay.open { opacity: 1; pointer-events: all; }
+        .d-item { display: flex; align-items: center; gap: 12px; padding: 12px 13px; border-radius: 13px; border: 1px solid rgba(255,255,255,0.04); background: rgba(255,255,255,0.02); margin-bottom: 6px; cursor: pointer; }
+        .promo-card { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 16px; padding: 12px 16px; margin-bottom: 12px; border-left: 4px solid #ffd700; display: flex; align-items: center; justify-content: space-between; }
+        .promo-code-badge { background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.3); border-radius: 20px; padding: 6px 12px; font-family: monospace; font-size: 14px; font-weight: bold; color: #ffd700; letter-spacing: 1px; }
+        .promo-reward { font-size: 12px; color: #10b981; }
+        @keyframes promoGlow { 0% { box-shadow: 0 0 0 0 rgba(255,215,0,0.4); } 100% { box-shadow: 0 0 0 8px rgba(255,215,0,0); } }
+        .promo-card:active { animation: promoGlow 0.4s ease-out; }
+        @media (max-width: 600px) { .click-btn { width: 100px; height: 100px; } .gold { font-size: 26px; } #heroCanvas { height: 320px; } }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,50,50,0.3); border-radius: 4px; }
     </style>
 </head>
 <body>
-    <div class="red-screen"></div>
-    
-    <div class="container">
-        <div class="icon">
-            💀⚠️💀
-        </div>
-        
-        <h1>СЕРВЕРА ВЫКЛЮЧЕНЫ</h1>
-        
-        <div class="subtitle">
-            ДОСТУП ЗАКРЫТ
-        </div>
-        
-        <div class="message">
-            Игровые сервера временно отключены.<br>
-            Сервера закрыты на время.<br>
-            Пожалуйста, зайдите позже.
-        </div>
 
-        <button class="retry-btn" onclick="location.reload()">
-            🔄 ПРОВЕРИТЬ СНОВА
-        </button>
+<audio id="bgMusic" loop preload="auto"></audio>
 
-        <div class="server-status">
-            <div class="red-dot"></div>
-            <div class="status-text">ВСЕ СЕРВЕРА OFFLINE</div>
-        </div>
+<div id="introScreen">
+    <canvas id="introCanvas3D"></canvas>
+    <div style="position: relative; z-index: 2; text-align: center;">
+        <h1 class="intro-title">StandClick</h1>
+        <div class="intro-sub">v 2.2 · Blood Update</div>
+        <button class="intro-btn" onclick="startApp()">ПРОДОЛЖИТЬ</button>
+    </div>
+</div>
 
-        <div class="error-code">
-            ERROR CODE: SRV-503 | CONNECTION LOST
+<div id="maintenanceScreen">
+    <div style="font-size: 60px;">🔧</div>
+    <div style="font-size: 28px; font-weight: bold; margin-top: 15px;">⚠ ТЕХНИЧЕСКИЕ РАБОТЫ ⚠</div>
+    <p style="color:#aaa; margin-top:15px;">Сервер временно недоступен. Идёт обновление!</p>
+</div>
+
+<div class="container" id="mainContainer" style="display:none;">
+    <div class="nav" id="mainNav">
+        <button class="nav-btn active" data-page="main">🏠 Главная</button>
+        <button class="nav-btn" data-page="inventory">🎒 Инв.</button>
+        <button class="nav-btn" data-page="shop">📦 Кейсы</button>
+        <button class="nav-btn" data-page="friends">👥 Друзья</button>
+        <button class="nav-btn" data-page="promo">🎁 Промо</button>
+        <button class="nav-btn" data-page="stats">📊 Статы</button>
+    </div>
+
+    <div id="page-main" class="page active">
+        <div class="main-layout">
+            <div class="side-icon-bar">
+                <button class="side-icon-btn" onclick="openDrawer()">⚙️</button>
+                <button class="side-icon-btn" onclick="navTo('inventory')">🎒</button>
+                <button class="side-icon-btn" onclick="navTo('shop')">📦</button>
+                <div class="side-divider"></div>
+                <button class="side-icon-btn" onclick="navTo('friends')">👥</button>
+                <button class="side-icon-btn" onclick="navTo('promo')">🎁</button>
+            </div>
+            <div class="main-center">
+                <div style="position:absolute; top:14px; text-align:center;">
+                    <div class="gold" id="gold">💰 0 G</div>
+                    <div class="nick" id="nick">Игрок</div>
+                    <div id="rank" style="font-size:11px; color:#666;">Silver I</div>
+                </div>
+                <canvas id="heroCanvas" style="width:100%; max-width:400px; height:400px;"></canvas>
+                <input type="file" id="faceUpload" accept="image/*" style="display:none">
+                <div class="click-area">
+                    <button class="click-btn" id="clickBtn">👊</button>
+                    <div style="text-align:center;">
+                        <button class="mega-click-btn" id="megaClickBtn">MEGA<br>+1000</button>
+                        <div class="mega-timer" id="megaTimer">00:00:00</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:5px;">
+                    <div class="id-box"><span>ID:</span><span id="playerIdDisplay">—</span><button class="btn" onclick="copyPlayerId()">📋</button></div>
+                    <button class="btn" id="changeNickBtn">Ник</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        // Создаем летящие красные частицы
-        function createParticles() {
-            for (let i = 0; i < 40; i++) {
-                const particle = document.createElement('div');
-                particle.style.position = 'absolute';
-                particle.style.width = Math.random() * 4 + 2 + 'px';
-                particle.style.height = particle.style.width;
-                particle.style.background = `rgba(255, 0, 0, ${Math.random() * 0.4 + 0.1})`;
-                particle.style.borderRadius = '50%';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.pointerEvents = 'none';
-                particle.style.zIndex = '5';
-                particle.style.animation = `float ${Math.random() * 4 + 3}s infinite ease-in-out`;
-                particle.style.animationDelay = Math.random() * 5 + 's';
-                document.body.appendChild(particle);
+    <div id="page-inventory" class="page">
+        <div class="card">
+            <h3 style="color:#ff4d4d;">ИНВЕНТАРЬ</h3>
+            <div id="skinsList" class="items-grid"></div>
+            <hr style="border-color:rgba(255,77,77,0.3); margin:15px 0;">
+            <h4>🔪 НОЖ В РУКЕ</h4>
+            <div id="knifeSlotSection"></div>
+            <h4>🔫 ОРУЖИЕ</h4>
+            <div id="weaponsList"></div>
+        </div>
+    </div>
+
+    <div id="page-shop" class="page">
+        <div class="card">
+            <h3 style="color:#ff4d4d;">🎲 КЕЙСЫ</h3>
+            <div class="card" style="margin:10px 0;"><h4>Обычный кейс</h4><p style="color:#ffd700;">500 G</p><button class="btn" id="openCommonCase">Открыть</button></div>
+            <div class="card" style="margin:10px 0;"><h4>Редкий кейс</h4><p style="color:#ffd700;">1500 G</p><button class="btn" id="openRareCase">Открыть</button></div>
+            <div class="card" style="margin:10px 0;"><h4>Легендарный кейс</h4><p style="color:#ffd700;">5000 G</p><button class="btn" id="openLegendaryCase">Открыть</button></div>
+            <div class="card" style="margin:10px 0; border-color:#a855f7;"><h4 style="color:#a855f7;">✨ 2.2 VERSIONS KEIS</h4><p style="color:#ffd700;">25000 G</p><p style="font-size:11px;">Эксклюзивные ножи из обновления!</p><button class="btn" id="openV22Case" style="background:#a855f7;">Открыть</button></div>
+        </div>
+    </div>
+
+    <div id="page-friends" class="page">
+        <div class="card">
+            <h3>👥 ДРУЗЬЯ</h3>
+            <div class="friend-input-wrapper"><input type="text" id="friendIdInput" placeholder="ID друга"><button class="btn" id="sendFriendRequestBtn">➕</button></div>
+            <h4>Входящие заявки</h4><div id="friendRequestsList"></div>
+            <h4>Мои друзья</h4><div id="friendsList"></div>
+        </div>
+    </div>
+
+    <div id="page-promo" class="page">
+        <div class="card">
+            <h3 style="color:#ffd700;">🎁 ПРОМОКОДЫ</h3>
+            <p style="font-size:12px; margin-bottom:15px;">Введи промокод или нажми на готовый ниже!</p>
+            <div class="promo-input"><input type="text" id="promoCodeInput" placeholder="Введите промокод"><button class="btn" id="activatePromoBtn">Активировать</button></div>
+        </div>
+        <div class="card">
+            <h3 style="color:#10b981;">🔥 ДОСТУПНЫЕ ПРОМОКОДЫ</h3>
+            <div id="builtinPromosList"></div>
+        </div>
+    </div>
+
+    <div id="page-stats" class="page">
+        <div class="card"><h3>📊 СТАТИСТИКА</h3><div id="statsContent"></div></div>
+    </div>
+</div>
+
+<div id="sideDrawer">
+    <div class="d-item" onclick="document.getElementById('faceUpload').click();closeDrawer();">🖼️ Редактировать лицо</div>
+    <div class="d-item" onclick="navTo('inventory');closeDrawer();">🎒 Инвентарь</div>
+</div>
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<div id="rouletteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1003; align-items:center; justify-content:center; flex-direction:column;">
+    <h2 style="color:#ff4d4d;">Открытие кейса</h2>
+    <div class="roulette-wrap" style="width:90%; max-width:500px;"><div class="roulette-pin"></div><div class="roulette-track" id="rouletteTrack"></div></div>
+    <div id="rouletteResult" style="margin-top:20px; text-align:center;"></div>
+    <button class="btn" id="rouletteCloseBtn" style="display:none; margin-top:15px;">Забрать</button>
+</div>
+
+<button id="closeSectionBtn" onclick="closeSection()">✕</button>
+
+<script>
+    // ==================== ВСТРОЕННЫЕ ПРОМОКОДЫ ====================
+    const BUILTIN_PROMOS = [
+        { code: "START300", reward: { gold: 300 }, desc: "300 G за старт!" },
+        { code: "WELCOME500", reward: { gold: 500 }, desc: "500 G приветственных" },
+        { code: "BLOODMOON", reward: { gold: 1000, skin: "AWP Blood Moon" }, desc: "1000 G + AWP Blood Moon" },
+        { code: "DRAGONLORE", reward: { skin: "AWP Dragon Lore" }, desc: "Легендарный AWP Dragon Lore!" },
+        { code: "KARAMBITGOLD", reward: { skin: "Karambit Gold" }, desc: "Золотой Karambit!" },
+        { code: "VIP2026", reward: { gold: 5000 }, desc: "5000 G для VIP" },
+        { code: "CRIMSONKNIFE", reward: { skin: "Karambit | Crimson" }, desc: "Красный Karambit" },
+        { code: "BUTTERFLYGOLD", reward: { skin: "Butterfly | Gold" }, desc: "Бабочка Gold Edition" },
+        { code: "M9TIGER", reward: { skin: "M9 Bayonet | Tiger" }, desc: "M9 Bayonet Tiger" },
+        { code: "POTIONKING", reward: { potion: "red", potionCount: 3 }, desc: "3 красных зелья" },
+        { code: "GREENMAGE", reward: { potion: "green", potionCount: 3 }, desc: "3 зелёных зелья" },
+        { code: "SUPERSET", reward: { gold: 2500, potion: "red", potionCount: 2 }, desc: "2500 G + 2 красных зелья" },
+        { code: "RAREBOX", reward: { skin: "Перчатки (Красные)" }, desc: "Красные перчатки" },
+        { code: "LEGENDARYGLOVES", reward: { skin: "Перчатки (Оранжевые)" }, desc: "Оранжевые перчатки" },
+        { code: "STARTERPACK", reward: { gold: 1500, skin: "AKM Tiger" }, desc: "1500 G + AKM Tiger" },
+        { code: "DAILYBONUS", reward: { gold: 200 }, desc: "200 G ежедневный бонус" },
+        { code: "WEEKEND", reward: { gold: 750 }, desc: "750 G выходного дня" },
+        { code: "STREAMER", reward: { gold: 10000, skin: "AWP Dragon Lore" }, desc: "10,000 G + AWP Dragon Lore!" },
+        { code: "STANDCLICK2026", reward: { gold: 2026 }, desc: "2026 G" },
+        { code: "SECRETCODE", reward: { gold: 9999, skin: "Karambit | Crimson" }, desc: "Секретный код! 9999 G + нож" }
+    ];
+
+    // Инициализация 3D
+    let introScene, introCamera, introRenderer;
+    function initIntro3D() {
+        const canvas = document.getElementById('introCanvas3D');
+        if (!canvas) return;
+        introRenderer = new THREE.WebGLRenderer({ canvas, alpha: false });
+        introRenderer.setSize(window.innerWidth, window.innerHeight);
+        introScene = new THREE.Scene();
+        introScene.background = new THREE.Color(0x050000);
+        introCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+        introCamera.position.z = 30;
+        
+        const pCount = 400;
+        const pGeo = new THREE.BufferGeometry();
+        const pos = new Float32Array(pCount * 3);
+        for (let i = 0; i < pCount; i++) {
+            pos[i*3] = (Math.random()-0.5)*100;
+            pos[i*3+1] = (Math.random()-0.5)*100;
+            pos[i*3+2] = (Math.random()-0.5)*60 - 20;
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0xff3333, size: 0.3 }));
+        introScene.add(particles);
+        
+        function animate() { if (introRenderer) { requestAnimationFrame(animate); introCamera.position.x = Math.sin(Date.now() * 0.0005) * 2; introCamera.lookAt(0,0,0); introRenderer.render(introScene, introCamera); } }
+        animate();
+        window.addEventListener('resize', () => { introRenderer.setSize(window.innerWidth, window.innerHeight); introCamera.aspect = window.innerWidth / window.innerHeight; introCamera.updateProjectionMatrix(); });
+    }
+    initIntro3D();
+
+    function startApp() {
+        document.getElementById('introScreen').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'block';
+        document.getElementById('bgMusic').play().catch(()=>{});
+        initGame();
+    }
+
+    const gun = Gun(['https://gun-vue.yogg.app/gun']);
+    const db = gun.get('standclick_v22');
+    
+    let game = {
+        id: null, nick: "Игрок", gold: 5000, mmr: 0, wins: 0,
+        skins: [], friends: [], friendRequests: [], usedPromos: [],
+        lastMegaClick: 0, equippedGlove: null, weapons: {
+            ak47: { name: "AK-47", active: true, skin: null },
+            awp: { name: "AWP", active: false, skin: null },
+            m4a4: { name: "M4A4", active: false, skin: null },
+            deagle: { name: "Desert Eagle", active: false, skin: null }
+        }
+    };
+
+    function generateId() { return 'ST2-' + Math.random().toString(36).substring(2, 10).toUpperCase(); }
+    
+    function getSkinRarity(name) {
+        if (!name) return 'common';
+        if (name.includes('Dragon Lore') || name.includes('Crimson') || name.includes('Blood Moon')) return 'arcane';
+        if (name.includes('Gold') || name.includes('Tiger')) return 'legendary';
+        if (name.includes('Karambit') || name.includes('Butterfly') || name.includes('M9')) return 'arcane';
+        if (name.includes('Перчатки (Оранжевые)')) return 'legendary';
+        if (name.includes('Перчатки (Красные)')) return 'epic';
+        if (name.includes('Перчатки (Синие)')) return 'rare';
+        return 'common';
+    }
+
+    function saveGame() { if (game.id) localStorage.setItem('sc22_' + game.id, JSON.stringify(game)); }
+    
+    function loadGame() {
+        const savedId = localStorage.getItem('sc22_lastId');
+        if (savedId) {
+            const raw = localStorage.getItem('sc22_' + savedId);
+            if (raw) {
+                try { Object.assign(game, JSON.parse(raw)); } catch(e) {}
             }
         }
+        if (!game.id) { game.id = generateId(); game.gold = 5000; }
+        if (!game.skins.length) {
+            game.skins.push({ name: "Перчатки (Синие)", rarity: "rare" });
+        }
+        saveGame(); updateUI();
+        setTimeout(() => { gunSave(game.id, game); subscribeIncoming(); }, 500);
+    }
 
-        // Добавляем стиль для частиц
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0% {
-                    transform: translateY(0) translateX(0);
-                    opacity: 0;
-                }
-                20% {
-                    opacity: 0.8;
-                }
-                80% {
-                    opacity: 0.8;
-                }
-                100% {
-                    transform: translateY(-200px) translateX(${Math.random() * 100 - 50}px);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
+    function gunSave(id, data) { db.get('p_' + id).put({ id, nick: data.nick, gold: data.gold, mmr: data.mmr, wins: data.wins, lastSeen: Date.now() }); }
+    function gunPatch(id, patch) { db.get('p_' + id).put(patch); }
+    
+    function subscribeIncoming() {
+        db.get('p_' + game.id).get('pendingGold').on(amount => { if (amount > 0) { game.gold += amount; saveGame(); updateUI(); showToast(`+${amount} G!`); db.get('p_' + game.id).get('pendingGold').put(0); } });
+        db.get('p_' + game.id).get('_reqNodes').map().on((data, key) => { if (data && !game.friendRequests.some(r => r.from === key)) { game.friendRequests.push({ from: key }); saveGame(); renderFriendsUI(); } });
+        db.get('p_' + game.id).get('_friendNodes').map().on((data, key) => { if (data === true && !game.friends.includes(key)) { game.friends.push(key); saveGame(); renderFriendsUI(); } });
+    }
+
+    function updateUI() {
+        document.getElementById('gold').innerHTML = `💰 ${Math.floor(game.gold)} G`;
+        document.getElementById('nick').innerText = game.nick;
+        document.getElementById('playerIdDisplay').innerText = game.id;
+        renderInventory();
+        renderWeapons();
+        renderStats();
+        renderBuiltinPromos();
+    }
+
+    function renderInventory() {
+        const container = document.getElementById('skinsList');
+        if (!container) return;
+        container.innerHTML = game.skins.map((s, i) => `<div class="inv-item-3d" onclick="selectSkin(${i})"><div style="font-size:28px;">${s.name.includes('Перчатки')?'🧤':'🔫'}</div><div style="font-size:11px;">${s.name}</div><div style="font-size:8px; color:#888;">${s.rarity}</div></div>`).join('') || '<div style="color:#666;">Пусто</div>';
+    }
+
+    function renderWeapons() {
+        const container = document.getElementById('weaponsList');
+        if (!container) return;
+        container.innerHTML = Object.entries(game.weapons).map(([id, w]) => `
+            <div class="weapon-card"><div><b>${w.name}</b> ${w.active?'✅':''}</div><div>Скин: ${w.skin?.name || 'нет'}</div>
+            <button class="btn" onclick="equipWeapon('${id}')">Применить</button>
+            <button class="btn" onclick="openInspect('${id}')">Осмотреть</button></div>`).join('');
+    }
+
+    function renderStats() {
+        const el = document.getElementById('statsContent');
+        if (el) el.innerHTML = `<div>🪙 Голда: ${Math.floor(game.gold)}</div><div>📊 MMR: ${game.mmr}</div><div>🏆 Побед: ${game.wins}</div><div>🎒 Скинов: ${game.skins.length}</div><div>👥 Друзей: ${game.friends.length}</div>`;
+    }
+
+    function renderBuiltinPromos() {
+        const container = document.getElementById('builtinPromosList');
+        if (!container) return;
+        container.innerHTML = BUILTIN_PROMOS.map(p => `
+            <div class="promo-card" onclick="applyPromoCode('${p.code}')">
+                <div><div class="promo-code-badge">${p.code}</div><div style="font-size:11px; color:#aaa; margin-top:4px;">${p.desc}</div></div>
+                <div class="promo-reward">${p.reward.gold ? `+${p.reward.gold} G` : ''} ${p.reward.skin ? `🎁 ${p.reward.skin}` : ''}</div>
+            </div>`).join('');
+    }
+
+    function applyPromoCode(code) {
+        if (game.usedPromos.includes(code)) { showToast('❌ Промокод уже использован!'); return; }
+        const promo = BUILTIN_PROMOS.find(p => p.code === code);
+        if (!promo) return;
+        if (promo.reward.gold) game.gold += promo.reward.gold;
+        if (promo.reward.skin) game.skins.push({ name: promo.reward.skin, rarity: getSkinRarity(promo.reward.skin) });
+        if (promo.reward.potion) {
+            for (let i = 0; i < (promo.reward.potionCount || 1); i++)
+                game.ownedPotions = game.ownedPotions || [];
+                game.ownedPotions.push({ ptype: promo.reward.potion, id: Date.now() });
+        }
+        game.usedPromos.push(code);
+        saveGame(); updateUI();
+        showToast(`🎉 Промокод активирован! ${promo.reward.gold ? `+${promo.reward.gold} G` : ''} ${promo.reward.skin ? `Получен ${promo.reward.skin}` : ''}`);
+    }
+
+    function activatePromoInput() {
+        const code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+        if (!code) return;
+        applyPromoCode(code);
+        document.getElementById('promoCodeInput').value = '';
+    }
+
+    async function sendFriendRequest() {
+        const fid = document.getElementById('friendIdInput').value.trim();
+        if (!fid) return;
+        if (fid === game.id) return showToast('Нельзя добавить себя');
+        db.get('p_' + fid).get('_reqNodes').get(game.id).put(JSON.stringify({ from: game.id, fromName: game.nick }));
+        showToast('Заявка отправлена');
+    }
+
+    async function acceptFriend(fromId) {
+        game.friends.push(fromId);
+        game.friendRequests = game.friendRequests.filter(r => r.from !== fromId);
+        saveGame();
+        db.get('p_' + game.id).get('_reqNodes').get(fromId).put(null);
+        db.get('p_' + game.id).get('_friendNodes').get(fromId).put(true);
+        db.get('p_' + fromId).get('_friendNodes').get(game.id).put(true);
+        renderFriendsUI();
+    }
+
+    async function renderFriendsUI() {
+        const reqDiv = document.getElementById('friendRequestsList');
+        const frDiv = document.getElementById('friendsList');
+        reqDiv.innerHTML = (game.friendRequests || []).map(r => `<div class="weapon-card"><span>${r.fromName || r.from}</span><button class="btn" onclick="acceptFriend('${r.from}')">Принять</button></div>`).join('') || '<div style="color:#666;">Нет заявок</div>';
+        const friendData = await Promise.all((game.friends || []).map(async fid => { const f = await new Promise(r => db.get('p_' + fid).once(d => r(d))); return `<div class="weapon-card"><span>${f?.nick || fid.slice(0,8)}</span><button class="btn" onclick="sendGoldToFriend('${fid}')">💰</button></div>`; }));
+        frDiv.innerHTML = friendData.join('') || '<div style="color:#666;">Нет друзей</div>';
+    }
+
+    function sendGoldToFriend(fid) { const amt = parseInt(prompt('Сколько G отправить?')); if (amt && amt <= game.gold) { game.gold -= amt; saveGame(); updateUI(); db.get('p_' + fid).get('pendingGold').once(v => db.get('p_' + fid).get('pendingGold').put((parseFloat(v)||0) + amt)); showToast(`Отправлено ${amt} G`); } }
+
+    // Рулетка для кейсов
+    const commonSkins = ["G22 Frost", "MP5 Swarm", "SSG 08 Abyss", "FAMAS Roller", "Перчатки (Синие)"];
+    const rareSkins = ["AKM Tiger", "Desert Eagle Cobra", "M4A4 Griffin", "Перчатки (Красные)"];
+    const legendarySkins = ["AWP Dragon Lore", "Karambit Gold", "Butterfly Fade", "Перчатки (Оранжевые)"];
+    const v22Knives = [
+        { name: "Karambit | Crimson", rarity: "arcane" }, { name: "Karambit | Ivory White", rarity: "legendary" },
+        { name: "M9 Bayonet | Violet", rarity: "epic" }, { name: "Butterfly | Gold", rarity: "legendary" },
+        { name: "Gut Knife | Emerald", rarity: "rare" }, { name: "Flip Knife | Sapphire", rarity: "epic" },
+        { name: "Karambit | Blood Moon", rarity: "arcane" }, { name: "M9 Bayonet | Tiger", rarity: "arcane" }
+    ];
+
+    function openCase(price, items, cost) {
+        if (game.gold < price) return showToast(`Нужно ${price} G!`);
+        game.gold -= price;
+        saveGame(); updateUI();
         
-        createParticles();
+        const winIndex = Math.floor(Math.random() * items.length);
+        const winItem = items[winIndex];
+        const track = document.getElementById('rouletteTrack');
+        track.innerHTML = '';
+        const total = 30;
+        for (let i = 0; i < total; i++) {
+            const item = i === 15 ? winItem : items[Math.floor(Math.random() * items.length)];
+            track.innerHTML += `<div class="roulette-cell">${item.name.includes('Перчатки')?'🧤':'🔪'}<div style="font-size:8px;">${item.name.slice(0,12)}</div></div>`;
+        }
+        const modal = document.getElementById('rouletteModal');
+        const resultDiv = document.getElementById('rouletteResult');
+        const closeBtn = document.getElementById('rouletteCloseBtn');
+        modal.style.display = 'flex';
+        resultDiv.innerHTML = '';
+        closeBtn.style.display = 'none';
+        
+        setTimeout(() => {
+            const container = track.parentElement;
+            const targetX = -(15 * 95) + (container.offsetWidth / 2) - 45;
+            track.style.transition = 'transform 4s cubic-bezier(0.1,0,0.1,1)';
+            track.style.transform = `translateX(${targetX}px)`;
+            setTimeout(() => {
+                game.skins.push({ name: winItem.name, rarity: winItem.rarity || getSkinRarity(winItem.name) });
+                saveGame(); updateUI();
+                resultDiv.innerHTML = `<div style="color:#ffd700;">🎉 Выпало: ${winItem.name} 🎉</div>`;
+                closeBtn.style.display = 'inline-block';
+                closeBtn.onclick = () => { modal.style.display = 'none'; track.style.transition = ''; track.style.transform = ''; };
+            }, 4000);
+        }, 100);
+    }
 
-        // Обновляем статус с таймером (типо проверка)
-        let attempts = 0;
-        setInterval(() => {
-            attempts++;
-            const statusText = document.querySelector('.status-text');
-            if (statusText && attempts % 6 === 0) {
-                statusText.style.opacity = '0.5';
-                setTimeout(() => {
-                    if (statusText) statusText.style.opacity = '1';
-                }, 500);
+    document.getElementById('openCommonCase').onclick = () => openCase(500, commonSkins.map(n=>({name:n})), 'common');
+    document.getElementById('openRareCase').onclick = () => openCase(1500, rareSkins.map(n=>({name:n})), 'rare');
+    document.getElementById('openLegendaryCase').onclick = () => openCase(5000, legendarySkins.map(n=>({name:n})), 'legendary');
+    document.getElementById('openV22Case').onclick = () => openCase(25000, v22Knives, 'v22');
+
+    // Мега клик
+    function updateMegaTimer() {
+        const cooldown = 5*60*60*1000;
+        const passed = Date.now() - (game.lastMegaClick || 0);
+        const btn = document.getElementById('megaClickBtn');
+        const timer = document.getElementById('megaTimer');
+        if (passed >= cooldown) { btn.disabled = false; timer.innerText = "ГОТОВО"; }
+        else { btn.disabled = true; const left = cooldown - passed; const h = Math.floor(left / 3600000); const m = Math.floor((left % 3600000) / 60000); const s = Math.floor((left % 60000) / 1000); timer.innerText = `${h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`; }
+    }
+    setInterval(updateMegaTimer, 1000);
+    document.getElementById('megaClickBtn').onclick = () => { if (Date.now() - (game.lastMegaClick||0) >= 5*60*60*1000) { game.gold += 1000; game.lastMegaClick = Date.now(); saveGame(); updateUI(); updateMegaTimer(); document.body.classList.add('mega-flash'); setTimeout(() => document.body.classList.remove('mega-flash'), 700); } };
+    document.getElementById('clickBtn').onclick = () => { game.gold += 2; saveGame(); updateUI(); };
+    document.getElementById('changeNickBtn').onclick = () => { const nn = prompt('Новый ник:', game.nick); if (nn) { game.nick = nn.slice(0,20); saveGame(); updateUI(); } };
+    document.getElementById('activatePromoBtn').onclick = activatePromoInput;
+    document.getElementById('sendFriendRequestBtn').onclick = sendFriendRequest;
+    
+    window.selectSkin = function(i) {
+        const skin = game.skins[i];
+        if (skin.name.includes('Перчатки')) { game.equippedGlove = skin; saveGame(); showToast(`Перчатки ${skin.name} надеты!`); }
+        else showToast(`Скин ${skin.name} можно надеть на оружие в инвентаре`);
+    };
+    window.equipWeapon = function(id) { Object.keys(game.weapons).forEach(k => game.weapons[k].active = false); game.weapons[id].active = true; saveGame(); updateUI(); };
+    window.openInspect = function(id) { showToast(`Осмотр ${game.weapons[id]?.name || id}`); };
+    window.copyPlayerId = () => { navigator.clipboard.writeText(game.id); showToast('ID скопирован!'); };
+    function showToast(msg) { const t = document.createElement('div'); t.textContent = msg; t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#ff4d4d;color:#fff;padding:8px 16px;border-radius:30px;z-index:9999;font-size:12px;'; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
+    
+    function navTo(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${page}`).classList.add('active');
+        const closeBtn = document.getElementById('closeSectionBtn');
+        if (page === 'main') closeBtn.classList.remove('visible');
+        else closeBtn.classList.add('visible');
+        if (page === 'friends') renderFriendsUI();
+        if (page === 'stats') renderStats();
+    }
+    function closeSection() { navTo('main'); }
+    function openDrawer() { document.getElementById('sideDrawer').classList.add('open'); document.getElementById('drawerOverlay').classList.add('open'); }
+    function closeDrawer() { document.getElementById('sideDrawer').classList.remove('open'); document.getElementById('drawerOverlay').classList.remove('open'); }
+    
+    window.navTo = navTo; window.closeSection = closeSection; window.openDrawer = openDrawer; window.closeDrawer = closeDrawer;
+    window.acceptFriend = acceptFriend; window.sendGoldToFriend = sendGoldToFriend;
+    
+    // 3D персонаж
+    let heroChar, mainScene, mainCamera, mainRenderer;
+    function initGame() {
+        const canvas = document.getElementById('heroCanvas');
+        mainRenderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        mainRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        mainScene = new THREE.Scene();
+        mainCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+        mainCamera.position.set(0, 2, 8);
+        
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(5, 10, 5);
+        mainScene.add(light);
+        mainScene.add(new THREE.AmbientLight(0x404060));
+        
+        const group = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2a2a2a });
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.6, 1.8, 8), bodyMat);
+        torso.position.y = 0;
+        group.add(torso);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.6, 32, 32), bodyMat);
+        head.position.y = 1.1;
+        group.add(head);
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), bodyMat);
+        armL.position.set(-0.9, 0.5, 0);
+        group.add(armL);
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 1.2, 8), bodyMat);
+        armR.position.set(0.9, 0.5, 0);
+        group.add(armR);
+        mainScene.add(group);
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            if (mainRenderer && mainScene && mainCamera) {
+                mainRenderer.render(mainScene, mainCamera);
             }
-        }, 10000);
-    </script>
+        }
+        animate();
+        window.addEventListener('resize', () => { mainRenderer.setSize(canvas.clientWidth, canvas.clientHeight); mainCamera.aspect = canvas.clientWidth / canvas.clientHeight; mainCamera.updateProjectionMatrix(); });
+        
+        document.getElementById('faceUpload').addEventListener('change', e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = ev => { const img = new Image(); img.src = ev.target.result; img.onload = () => { const tex = new THREE.CanvasTexture(img); head.material = new THREE.MeshStandardMaterial({ map: tex }); }; }; reader.readAsDataURL(file); } });
+    }
+    
+    loadGame();
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); navTo(btn.dataset.page); }));
+</script>
 </body>
 </html>
